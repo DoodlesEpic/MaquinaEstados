@@ -1,0 +1,63 @@
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+}
+
+.font-mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* Barra de rolagem personalizada */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Animacoes para Diagramas SVG */
+@keyframes signalFlow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.flow-active {
+  stroke-dasharray: 6 6;
+  animation: signalFlow 0.75s linear infinite;
+}
+
+.state-node {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.state-node:hover {
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+}
+
+.edge-path {
+  transition:
+    stroke 0.25s ease,
+    stroke-width 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.kmap-cell {
+  transition: all 0.2s ease;
+}

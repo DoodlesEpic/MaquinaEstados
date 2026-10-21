@@ -1,1349 +1,2196 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>PCS3115 • Máquinas de Estados Finitos (Moore & Mealy)</title>
-  <meta name="description" content="Relatório de estudo interativo sobre Máquinas de Estados Finitos (Moore e Mealy), projeto sequencial e mapas de Karnaugh para PCS3115.">
-  <meta name="theme-color" content="#090d16">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" type="image/svg+xml" href="./icon.svg">
-  <link rel="apple-touch-icon" href="./icon.svg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <title>PCS3115 • Máquinas de Estados Finitos (Moore & Mealy)</title>
+    <meta
+      name="description"
+      content="Relatório de estudo interativo sobre Máquinas de Estados Finitos (Moore e Mealy), projeto sequencial e mapas de Karnaugh para PCS3115."
+    />
+    <meta name="theme-color" content="#090d16" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
 
-  <script>
-    // Respeita o tema claro ou escuro do sistema no carregamento inicial sem flash visual
-    (function() {
-      const savedTheme = localStorage.getItem('theme');
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    })();
-  </script>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
 
-  <!-- Fontes e Bibliotecas CDN -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            brand: {
-              50: '#eff6ff',
-              500: '#3b82f6',
-              600: '#2563eb',
-            }
-          }
+    <script>
+      // Respeita o tema claro ou escuro do sistema no carregamento inicial sem flash visual
+      (function () {
+        const savedTheme = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
         }
-      }
-    }
-  </script>
+      })();
+    </script>
 
-  <style>
-    * { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-    }
-    .font-mono { font-family: 'JetBrains Mono', monospace; }
-    
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
+    <!-- Fontes e Bibliotecas CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-    /* Animações para Diagramas SVG */
-    @keyframes signalFlow {
-      to { stroke-dashoffset: -24; }
-    }
-    .flow-active {
-      stroke-dasharray: 6 6;
-      animation: signalFlow 0.75s linear infinite;
-    }
-    .state-node {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-    }
-    .state-node:hover {
-      filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
-    }
-    .edge-path {
-      transition: stroke 0.25s ease, stroke-width 0.25s ease, opacity 0.25s ease;
-    }
-    .kmap-cell {
-      transition: all 0.2s ease;
-    }
-  </style>
-</head>
-<body class="bg-slate-50 text-slate-900 dark:bg-[#090d16] dark:text-slate-100 selection:bg-blue-500 selection:text-white transition-colors duration-200">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-  <!-- Barra de Progresso de Leitura -->
-  <div class="fixed top-0 left-0 right-0 h-1 bg-slate-200 dark:bg-slate-800 z-50">
-    <div id="reading-progress" class="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 w-0 transition-all duration-150"></div>
-  </div>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+            colors: {
+              brand: {
+                50: "#eff6ff",
+                500: "#3b82f6",
+                600: "#2563eb",
+              },
+            },
+          },
+        },
+      };
+    </script>
 
-  <!-- Layout Principal -->
-  <div class="max-w-7xl mx-auto flex min-h-screen">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body
+    class="bg-slate-50 text-slate-900 dark:bg-[#090d16] dark:text-slate-100 selection:bg-blue-500 selection:text-white transition-colors duration-200"
+  >
+    <!-- Barra de Progresso de Leitura -->
+    <div
+      class="fixed top-0 left-0 right-0 h-1 bg-slate-200 dark:bg-slate-800 z-50"
+    >
+      <div
+        id="reading-progress"
+        class="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 w-0 transition-all duration-150"
+      ></div>
+    </div>
 
-    <!-- Sidebar Desktop -->
-    <aside class="hidden lg:flex flex-col w-72 shrink-0 border-r border-slate-200 dark:border-slate-800/80 bg-white/60 dark:bg-[#0d1322]/60 backdrop-blur-xl sticky top-0 h-screen p-6 justify-between">
-      <div>
-        <div class="flex items-center justify-between mb-8">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25">
-              <i data-lucide="cpu" class="w-5 h-5"></i>
+    <!-- Layout Principal -->
+    <div class="max-w-7xl mx-auto flex min-h-screen">
+      <!-- Sidebar Desktop -->
+      <aside
+        class="hidden lg:flex flex-col w-72 shrink-0 border-r border-slate-200 dark:border-slate-800/80 bg-white/60 dark:bg-[#0d1322]/60 backdrop-blur-xl sticky top-0 h-screen p-6 justify-between"
+      >
+        <div>
+          <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25"
+              >
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <span
+                  class="text-xs font-mono uppercase tracking-wider text-blue-600 dark:text-blue-400 font-semibold block"
+                  >PCS3115</span
+                >
+                <h1 class="font-bold text-sm tracking-tight">
+                  Sistemas Digitais
+                </h1>
+              </div>
+            </div>
+            <button
+              id="theme-toggle-desktop"
+              class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Alternar Tema"
+            >
+              <i
+                data-lucide="sun"
+                class="w-4 h-4 hidden dark:block text-amber-400"
+              ></i>
+              <i
+                data-lucide="moon"
+                class="w-4 h-4 block dark:hidden text-slate-700"
+              ></i>
+            </button>
+          </div>
+
+          <nav class="space-y-1.5" id="desktop-nav">
+            <a
+              href="#fundamentos"
+              class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all"
+            >
+              <i data-lucide="layers" class="w-4 h-4"></i>
+              <span>1. Fundamentos & Equações</span>
+            </a>
+            <a
+              href="#arquiteturas"
+              class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all"
+            >
+              <i data-lucide="git-compare" class="w-4 h-4"></i>
+              <span>2. Moore vs. Mealy</span>
+            </a>
+            <a
+              href="#fluxo-projeto"
+              class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all"
+            >
+              <i data-lucide="Compass" class="w-4 h-4"></i>
+              <span>3. Metodologia em 6 Passos</span>
+            </a>
+            <a
+              href="#estudo-caso"
+              class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all"
+            >
+              <i data-lucide="play-circle" class="w-4 h-4"></i>
+              <span>4. Simulador Detector "01"</span>
+            </a>
+            <a
+              href="#sintese-karnaugh"
+              class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all"
+            >
+              <i data-lucide="grid" class="w-4 h-4"></i>
+              <span>5. Síntese & Mapas K</span>
+            </a>
+            <a
+              href="#revisao"
+              class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all"
+            >
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span>6. Quiz Rápido de Revisão</span>
+            </a>
+          </nav>
+        </div>
+
+        <div
+          class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/50 text-xs space-y-2"
+        >
+          <div
+            class="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200"
+          >
+            <i data-lucide="smartphone" class="w-4 h-4 text-blue-500"></i>
+            <span>App Pronto para Offline</span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 leading-relaxed">
+            Este guia interativo possui suporte a instalação como PWA e
+            funcionamento offline.
+          </p>
+        </div>
+      </aside>
+
+      <!-- Conteúdo Principal -->
+      <main class="flex-1 min-w-0 pb-28 lg:pb-16">
+        <!-- Header Mobile -->
+        <header
+          class="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-[#090d16]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800"
+        >
+          <div class="flex items-center gap-2.5">
+            <div
+              class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold"
+            >
+              <i data-lucide="cpu" class="w-4 h-4"></i>
             </div>
             <div>
-              <span class="text-xs font-mono uppercase tracking-wider text-blue-600 dark:text-blue-400 font-semibold block">PCS3115</span>
-              <h1 class="font-bold text-sm tracking-tight">Sistemas Digitais</h1>
+              <span
+                class="text-[10px] font-mono uppercase tracking-wider text-blue-500 font-bold block"
+                >PCS3115 • PWA</span
+              >
+              <h1 class="font-bold text-sm leading-none">
+                Máquinas de Estados
+              </h1>
             </div>
           </div>
-          <button id="theme-toggle-desktop" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Alternar Tema">
-            <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
-            <i data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-700"></i>
+          <button
+            id="theme-toggle-mobile"
+            class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+          >
+            <i
+              data-lucide="sun"
+              class="w-4 h-4 hidden dark:block text-amber-400"
+            ></i>
+            <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
           </button>
-        </div>
+        </header>
 
-        <nav class="space-y-1.5" id="desktop-nav">
-          <a href="#fundamentos" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-            <i data-lucide="layers" class="w-4 h-4"></i>
-            <span>1. Fundamentos & Equações</span>
-          </a>
-          <a href="#arquiteturas" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-            <i data-lucide="git-compare" class="w-4 h-4"></i>
-            <span>2. Moore vs. Mealy</span>
-          </a>
-          <a href="#fluxo-projeto" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-            <i data-lucide="Compass" class="w-4 h-4"></i>
-            <span>3. Metodologia em 6 Passos</span>
-          </a>
-          <a href="#estudo-caso" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-            <i data-lucide="play-circle" class="w-4 h-4"></i>
-            <span>4. Simulador Detector "01"</span>
-          </a>
-          <a href="#sintese-karnaugh" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-            <i data-lucide="grid" class="w-4 h-4"></i>
-            <span>5. Síntese & Mapas K</span>
-          </a>
-          <a href="#revisao" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-            <span>6. Quiz Rápido de Revisão</span>
-          </a>
-        </nav>
-      </div>
-
-      <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/50 text-xs space-y-2">
-        <div class="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200">
-          <i data-lucide="smartphone" class="w-4 h-4 text-blue-500"></i>
-          <span>App Pronto para Offline</span>
-        </div>
-        <p class="text-slate-500 dark:text-slate-400 leading-relaxed">
-          Este guia interativo possui suporte a instalação como PWA e funcionamento offline.
-        </p>
-      </div>
-    </aside>
-
-    <!-- Conteúdo Principal -->
-    <main class="flex-1 min-w-0 pb-28 lg:pb-16">
-      
-      <!-- Header Mobile -->
-      <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-[#090d16]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-            <i data-lucide="cpu" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-blue-500 font-bold block">PCS3115 • PWA</span>
-            <h1 class="font-bold text-sm leading-none">Máquinas de Estados</h1>
-          </div>
-        </div>
-        <button id="theme-toggle-mobile" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
-          <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
-          <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
-        </button>
-      </header>
-
-      <div class="max-w-4xl mx-auto px-4 sm:px-8 pt-8 space-y-16">
-
-        <!-- Hero Section -->
-        <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 text-white p-6 sm:p-10 shadow-xl border border-slate-800">
-          <div class="relative z-10 space-y-4 max-w-2xl">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-mono">
-              <span>Guia de Estudo Interativo</span>
-              <span>•</span>
-              <span>Moore & Mealy</span>
+        <div class="max-w-4xl mx-auto px-4 sm:px-8 pt-8 space-y-16">
+          <!-- Hero Section -->
+          <section
+            class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 text-white p-6 sm:p-10 shadow-xl border border-slate-800"
+          >
+            <div class="relative z-10 space-y-4 max-w-2xl">
+              <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-mono"
+              >
+                <span>Guia de Estudo Interativo</span>
+                <span>•</span>
+                <span>Moore & Mealy</span>
+              </div>
+              <h1
+                class="text-2xl sm:text-4xl font-bold tracking-tight leading-tight"
+              >
+                Máquinas de Estados Finitos (FSM)
+              </h1>
+              <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                Circuitos combinacionais dependem apenas das entradas atuais. Já
+                os circuitos sequenciais possuem memória: suas saídas dependem
+                das entradas atuais e de toda a história passada do sistema,
+                resumida no conceito de <strong>Estado</strong>.
+              </p>
+              <div
+                class="pt-2 flex flex-wrap gap-3 text-xs font-mono text-slate-300"
+              >
+                <span
+                  class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5"
+                >
+                  <i
+                    data-lucide="mouse-pointer-click"
+                    class="w-3.5 h-3.5 text-blue-400"
+                  ></i>
+                  Diagramas Interativos
+                </span>
+                <span
+                  class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5"
+                >
+                  <i
+                    data-lucide="activity"
+                    class="w-3.5 h-3.5 text-emerald-400"
+                  ></i>
+                  Simulador Passo a Passo
+                </span>
+                <span
+                  class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5"
+                >
+                  <i data-lucide="grid" class="w-3.5 h-3.5 text-amber-400"></i>
+                  Mapas de Karnaugh Vivos
+                </span>
+              </div>
             </div>
-            <h1 class="text-2xl sm:text-4xl font-bold tracking-tight leading-tight">
-              Máquinas de Estados Finitos (FSM)
-            </h1>
-            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-              Circuitos combinacionais dependem apenas das entradas atuais. Já os circuitos sequenciais possuem memória: suas saídas dependem das entradas atuais e de toda a história passada do sistema, resumida no conceito de <strong>Estado</strong>.
+          </section>
+
+          <!-- SEÇÃO 1: FUNDAMENTOS -->
+          <section id="fundamentos" class="scroll-mt-20 space-y-6">
+            <div class="flex items-center gap-3">
+              <span
+                class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm"
+                >01</span
+              >
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+                Fundamentos de Circuitos Sequenciais
+              </h2>
+            </div>
+
+            <p
+              class="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base"
+            >
+              Como é impossível construir um circuito com memória infinita para
+              guardar todas as entradas passadas, compactamos o histórico
+              relevante em um número finito de combinações binárias chamadas
+              <strong>Estados Internos</strong>.
             </p>
-            <div class="pt-2 flex flex-wrap gap-3 text-xs font-mono text-slate-300">
-              <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5">
-                <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-blue-400"></i> Diagramas Interativos
-              </span>
-              <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5">
-                <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i> Simulador Passo a Passo
-              </span>
-              <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5">
-                <i data-lucide="grid" class="w-3.5 h-3.5 text-amber-400"></i> Mapas de Karnaugh Vivos
-              </span>
-            </div>
-          </div>
-        </section>
 
-        <!-- SEÇÃO 1: FUNDAMENTOS -->
-        <section id="fundamentos" class="scroll-mt-20 space-y-6">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm">01</span>
-            <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Fundamentos de Circuitos Sequenciais</h2>
-          </div>
-
-          <p class="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base">
-            Como é impossível construir um circuito com memória infinita para guardar todas as entradas passadas, compactamos o histórico relevante em um número finito de combinações binárias chamadas <strong>Estados Internos</strong>.
-          </p>
-
-          <!-- Cartões de Conceito -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div class="text-xs font-mono uppercase text-blue-500 font-semibold mb-1">Variável de Entrada</div>
-              <div class="text-lg font-bold mb-2">Sinal Externo ($X$)</div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Estímulo vindo do mundo externo (sensores, botões ou barramento de dados) que provoca mudanças na máquina.
-              </p>
-            </div>
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div class="text-xs font-mono uppercase text-purple-500 font-semibold mb-1">Memória Síncrona</div>
-              <div class="text-lg font-bold mb-2">Estado Atual ($Q^t$)</div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Valor binário armazenado nos Flip-Flops no ciclo de clock atual. Representa o resumo do passado do circuito.
-              </p>
-            </div>
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div class="text-xs font-mono uppercase text-emerald-500 font-semibold mb-1">Evolução Temporal</div>
-              <div class="text-lg font-bold mb-2">Próximo Estado ($Q^{t+\Delta t}$)</div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                O novo estado para o qual a máquina irá avançar assim que ocorrer a próxima borda ativa do sinal de clock.
-              </p>
-            </div>
-          </div>
-
-          <!-- Equações Fundamentais -->
-          <div class="p-6 rounded-2xl bg-slate-900 text-slate-100 border border-slate-800 space-y-4">
-            <h3 class="text-sm font-mono uppercase tracking-wider text-slate-400">As Duas Equações Gerais de uma FSM</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="p-4 rounded-xl bg-slate-800/70 border border-slate-700/60">
-                <span class="text-xs text-blue-400 font-mono block mb-1">1. Função de Transição (Próximo Estado)</span>
-                <div class="text-base sm:text-lg py-1">$$Q^{t + \Delta t} = f(Q^t, X^t)$$</div>
-                <p class="text-xs text-slate-400 mt-1">O próximo estado sempre depende do estado atual e da entrada atual.</p>
-              </div>
-              <div class="p-4 rounded-xl bg-slate-800/70 border border-slate-700/60">
-                <span class="text-xs text-emerald-400 font-mono block mb-1">2. Função de Saída (Moore vs. Mealy)</span>
-                <div class="text-sm sm:text-base py-1">
-                  $$\text{Moore: } Z^t = g(Q^t)$$
-                  $$\text{Mealy: } Z^t = g(Q^t, X^t)$$
+            <!-- Cartões de Conceito -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm"
+              >
+                <div
+                  class="text-xs font-mono uppercase text-blue-500 font-semibold mb-1"
+                >
+                  Variável de Entrada
                 </div>
-                <p class="text-xs text-slate-400 mt-1">Define se a saída depende só do estado ou também da entrada imediata.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- SEÇÃO 2: ARQUITETURAS MOORE VS MEALY INTERATIVA -->
-        <section id="arquiteturas" class="scroll-mt-20 space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm">02</span>
-              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Arquitetura: Moore vs. Mealy</h2>
-            </div>
-
-            <!-- Toggle Interativo Moore / Mealy -->
-            <div class="inline-flex p-1 rounded-xl bg-slate-200 dark:bg-slate-800 self-start">
-              <button id="btn-arch-moore" onclick="setArchitecture('moore')" class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-blue-600 text-white shadow">
-                Máquina de Moore
-              </button>
-              <button id="btn-arch-mealy" onclick="setArchitecture('mealy')" class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300">
-                Máquina de Mealy
-              </button>
-            </div>
-          </div>
-
-          <!-- Diagrama de Blocos SVG Interativo (Substituindo o ASCII) -->
-          <div class="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div>
-                <span id="arch-badge" class="text-xs font-mono uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 font-semibold">Arquitetura de Moore</span>
-                <h3 id="arch-title" class="text-base font-bold mt-1">Saída depende exclusivamente do Estado Atual ($Q$)</h3>
-              </div>
-              <span class="text-xs text-slate-400 flex items-center gap-1">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Alterne os botões acima para ver a mudança física no circuito
-              </span>
-            </div>
-
-            <!-- SVG Diagrama de Blocos -->
-            <div class="w-full overflow-x-auto py-2">
-              <svg viewBox="0 0 760 270" class="w-full min-w-[600px] h-auto select-none">
-                <defs>
-                  <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6"/>
-                  </marker>
-                  <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7"/>
-                  </marker>
-                  <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
-                  </marker>
-                  <marker id="arrow-rose" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#f43f5e"/>
-                  </marker>
-                </defs>
-
-                <!-- Entrada X -->
-                <text x="20" y="95" class="text-xs font-mono font-bold fill-blue-500">Entrada (X)</text>
-                <path d="M 20 105 L 155 105" stroke="#3b82f6" stroke-width="3" class="flow-active" fill="none" marker-end="url(#arrow-blue)"/>
-
-                <!-- Caminho Feedforward Exclusivo de Mealy (Entrada X direto para Lógica de Saída) -->
-                <g id="mealy-feedforward" class="opacity-15 transition-opacity duration-500">
-                  <circle cx="95" cy="105" r="5" fill="#f43f5e"/>
-                  <path d="M 95 105 L 95 32 L 560 32 L 560 72" stroke="#f43f5e" stroke-width="3" id="mealy-wire" fill="none" marker-end="url(#arrow-rose)"/>
-                  <rect x="245" y="14" width="230" height="24" rx="6" fill="#f43f5e"/>
-                  <text x="360" y="30" text-anchor="middle" class="text-[11px] font-mono font-bold fill-white">Via Direta Assíncrona (Mealy)</text>
-                </g>
-
-                <!-- Bloco 1: Lógica de Próximo Estado (f) -->
-                <rect x="165" y="75" width="145" height="90" rx="14" class="fill-slate-100 dark:fill-slate-800 stroke-blue-500" stroke-width="2"/>
-                <text x="237" y="112" text-anchor="middle" class="text-xs font-bold fill-slate-800 dark:fill-slate-100">Lógica Comb.</text>
-                <text x="237" y="130" text-anchor="middle" class="text-[11px] font-mono fill-blue-500">Próx. Estado (f)</text>
-
-                <!-- Ligação Próximo Estado (D) -->
-                <path d="M 310 120 L 365 120" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#arrow-blue)"/>
-                <text x="338" y="110" text-anchor="middle" class="text-[10px] font-mono fill-slate-400">Próx. Q</text>
-
-                <!-- Bloco 2: Registrador de Estado (Flip-Flops) -->
-                <rect x="375" y="75" width="110" height="90" rx="14" class="fill-slate-100 dark:fill-slate-800 stroke-purple-500" stroke-width="2"/>
-                <text x="430" y="110" text-anchor="middle" class="text-xs font-bold fill-slate-800 dark:fill-slate-100">Memória</text>
-                <text x="430" y="128" text-anchor="middle" class="text-[11px] font-mono fill-purple-400">Flip-Flops</text>
-                <!-- Símbolo de Clock -->
-                <polygon points="375,145 387,152 375,159" fill="none" stroke="#a855f7" stroke-width="1.8"/>
-                <text x="393" y="156" class="text-[10px] font-mono fill-purple-400">CLK</text>
-
-                <!-- Saída Q (Estado Atual) -->
-                <path d="M 485 120 L 540 120" stroke="#a855f7" stroke-width="3" class="flow-active" fill="none" marker-end="url(#arrow-purple)"/>
-                <text x="512" y="108" text-anchor="middle" class="text-[11px] font-mono font-bold fill-purple-400">Q (Atual)</text>
-
-                <!-- Realimentação de Q para Lógica de Próximo Estado -->
-                <circle cx="512" cy="120" r="4.5" fill="#a855f7"/>
-                <path d="M 512 120 L 512 220 L 125 220 L 125 140 L 155 140" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="5 5" fill="none" marker-end="url(#arrow-purple)"/>
-                <text x="320" y="240" text-anchor="middle" class="text-[11px] font-mono fill-purple-400">Realimentação de Estado Atual (Q)</text>
-
-                <!-- Bloco 3: Lógica de Saída (g) -->
-                <rect x="550" y="75" width="120" height="90" rx="14" class="fill-slate-100 dark:fill-slate-800 stroke-emerald-500" stroke-width="2"/>
-                <text x="610" y="112" text-anchor="middle" class="text-xs font-bold fill-slate-800 dark:fill-slate-100">Lógica Comb.</text>
-                <text x="610" y="130" text-anchor="middle" class="text-[11px] font-mono fill-emerald-500">Saída (g)</text>
-
-                <!-- Saída Final Z -->
-                <path d="M 670 120 L 735 120" stroke="#10b981" stroke-width="3" class="flow-active" fill="none" marker-end="url(#arrow-emerald)"/>
-                <text x="715" y="105" text-anchor="middle" class="text-xs font-mono font-bold fill-emerald-500">Saída (Z)</text>
-              </svg>
-            </div>
-
-            <!-- Explicação Dinâmica -->
-            <div id="arch-explanation" class="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Na <strong>Máquina de Moore</strong>, a linha vermelha superior está desconectada. A saída $Z$ é calculada apenas a partir dos Flip-Flops ($Q$). Por isso, nos diagramas de estado, a saída fica escrita <strong>dentro da bolinha do estado</strong>. Ela é mais segura contra ruídos nas entradas, mas geralmente precisa de mais estados.
-            </div>
-          </div>
-
-          <!-- Tabela Comparativa Direta -->
-          <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <table class="w-full text-left border-collapse text-xs sm:text-sm">
-              <thead>
-                <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-mono text-xs uppercase text-slate-500">
-                  <th class="p-4">Critério</th>
-                  <th class="p-4 text-blue-600 dark:text-blue-400">Máquina de Moore</th>
-                  <th class="p-4 text-emerald-600 dark:text-emerald-400">Máquina de Mealy</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                <tr>
-                  <td class="p-4 font-semibold">Dependência da Saída</td>
-                  <td class="p-4">Apenas do Estado Atual: $Z = g(Q)$</td>
-                  <td class="p-4">Estado Atual e Entrada: $Z = g(Q, X)$</td>
-                </tr>
-                <tr>
-                  <td class="p-4 font-semibold">Representação no Grafo</td>
-                  <td class="p-4">Dentro do círculo do estado: <code class="font-mono text-blue-500">Estado / Z</code></td>
-                  <td class="p-4">Nas setas de transição: <code class="font-mono text-emerald-500">X / Z</code></td>
-                </tr>
-                <tr>
-                  <td class="p-4 font-semibold">Quantidade de Estados</td>
-                  <td class="p-4">Maior (ex: 4 estados para detector "01")</td>
-                  <td class="p-4">Menor (ex: 2 estados para detector "01")</td>
-                </tr>
-                <tr>
-                  <td class="p-4 font-semibold">Velocidade de Resposta</td>
-                  <td class="p-4">Síncrona (aguarda a borda do clock)</td>
-                  <td class="p-4">Mais rápida (reage imediatamente a $X$)</td>
-                </tr>
-                <tr>
-                  <td class="p-4 font-semibold">Sensibilidade a Ruídos</td>
-                  <td class="p-4">Alta imunidade (saída filtrada pelos FFs)</td>
-                  <td class="p-4">Sujeita a <em>glitches</em> se $X$ oscilar</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- SEÇÃO 3: METODOLOGIA EM 6 PASSOS -->
-        <section id="fluxo-projeto" class="scroll-mt-20 space-y-6">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm">03</span>
-            <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Roteiro de Projeto em 6 Passos</h2>
-          </div>
-
-          <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-base">
-            Todo projeto de circuito sequencial síncrono em PCS3115 segue uma receita estruturada que transforma um problema em palavras em portas lógicas e Flip-Flops reais:
-          </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-              <div>
-                <span class="text-xs font-mono font-bold text-blue-500">PASSO 01</span>
-                <h3 class="font-bold text-base mt-1 mb-2">Diagrama de Estados</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Traduzir o enunciado verbal para um grafo visual com nós (estados) e setas (transições guiadas pelas entradas).
+                <div class="text-lg font-bold mb-2">Sinal Externo ($X$)</div>
+                <p
+                  class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                >
+                  Estímulo vindo do mundo externo (sensores, botões ou
+                  barramento de dados) que provoca mudanças na máquina.
                 </p>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400">Abstração Comportamental</div>
-            </div>
-
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-              <div>
-                <span class="text-xs font-mono font-bold text-blue-500">PASSO 02</span>
-                <h3 class="font-bold text-base mt-1 mb-2">Tabela de Estados</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Tabular todas as transições: linhas representam o estado atual e colunas mostram o próximo estado e a saída para cada entrada.
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm"
+              >
+                <div
+                  class="text-xs font-mono uppercase text-purple-500 font-semibold mb-1"
+                >
+                  Memória Síncrona
+                </div>
+                <div class="text-lg font-bold mb-2">Estado Atual ($Q^t$)</div>
+                <p
+                  class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                >
+                  Valor binário armazenado nos Flip-Flops no ciclo de clock
+                  atual. Representa o resumo do passado do circuito.
                 </p>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400">Organização Tabular</div>
-            </div>
-
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-              <div>
-                <span class="text-xs font-mono font-bold text-purple-500">PASSO 03</span>
-                <h3 class="font-bold text-base mt-1 mb-2">Minimização de Estados</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Identificar e fundir estados equivalentes para reduzir o número de Flip-Flops necessários na implementação física.
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm"
+              >
+                <div
+                  class="text-xs font-mono uppercase text-emerald-500 font-semibold mb-1"
+                >
+                  Evolução Temporal
+                </div>
+                <div class="text-lg font-bold mb-2">
+                  Próximo Estado ($Q^{t+\Delta t}$)
+                </div>
+                <p
+                  class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                >
+                  O novo estado para o qual a máquina irá avançar assim que
+                  ocorrer a próxima borda ativa do sinal de clock.
                 </p>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400">Otimização Lógica</div>
             </div>
 
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-              <div>
-                <span class="text-xs font-mono font-bold text-purple-500">PASSO 04</span>
-                <h3 class="font-bold text-base mt-1 mb-2">Designação de Estados</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Atribuir códigos binários ($y_1, y_0$) para cada estado simbólico ($A, B, C...$). O uso de código Gray vizinho ajuda a simplificar mapas.
-                </p>
+            <!-- Equações Fundamentais -->
+            <div
+              class="p-6 rounded-2xl bg-slate-900 text-slate-100 border border-slate-800 space-y-4"
+            >
+              <h3
+                class="text-sm font-mono uppercase tracking-wider text-slate-400"
+              >
+                As Duas Equações Gerais de uma FSM
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div
+                  class="p-4 rounded-xl bg-slate-800/70 border border-slate-700/60"
+                >
+                  <span class="text-xs text-blue-400 font-mono block mb-1"
+                    >1. Função de Transição (Próximo Estado)</span
+                  >
+                  <div class="text-base sm:text-lg py-1">
+                    $$Q^{t + \Delta t} = f(Q^t, X^t)$$
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1">
+                    O próximo estado sempre depende do estado atual e da entrada
+                    atual.
+                  </p>
+                </div>
+                <div
+                  class="p-4 rounded-xl bg-slate-800/70 border border-slate-700/60"
+                >
+                  <span class="text-xs text-emerald-400 font-mono block mb-1"
+                    >2. Função de Saída (Moore vs. Mealy)</span
+                  >
+                  <div class="text-sm sm:text-base py-1">
+                    $$\text{Moore: } Z^t = g(Q^t)$$ $$\text{Mealy: } Z^t =
+                    g(Q^t, X^t)$$
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1">
+                    Define se a saída depende só do estado ou também da entrada
+                    imediata.
+                  </p>
+                </div>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400">Codificação Binária</div>
             </div>
+          </section>
 
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-              <div>
-                <span class="text-xs font-mono font-bold text-emerald-500">PASSO 05</span>
-                <h3 class="font-bold text-base mt-1 mb-2">Mapas de Karnaugh</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Escolher o tipo de Flip-Flop (geralmente Tipo D, onde $D = Y$) e extrair as equações booleanas mínimas para cada bit de estado e saída.
-                </p>
+          <!-- SEÇÃO 2: ARQUITETURAS MOORE VS MEALY INTERATIVA -->
+          <section id="arquiteturas" class="scroll-mt-20 space-y-6">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              <div class="flex items-center gap-3">
+                <span
+                  class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm"
+                  >02</span
+                >
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+                  Arquitetura: Moore vs. Mealy
+                </h2>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400">Síntese Algébrica</div>
-            </div>
 
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-              <div>
-                <span class="text-xs font-mono font-bold text-emerald-500">PASSO 06</span>
-                <h3 class="font-bold text-base mt-1 mb-2">Esquemático Final</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Desenhar ou simular o circuito lógico conectando as portas AND, OR e NOT às entradas dos Flip-Flops sincronizados pelo clock.
-                </p>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400">Implementação em Hardware</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- SEÇÃO 4: SIMULADOR INTERATIVO DETECTOR "01" -->
-        <section id="estudo-caso" class="scroll-mt-20 space-y-6">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm">04</span>
-            <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Laboratório Interativo: Detector de Sequência "01"</h2>
-          </div>
-
-          <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-            Vamos comparar na prática como as máquinas de <strong>Moore (4 estados)</strong> e <strong>Mealy (2 estados)</strong> reagem exatamente à mesma sequência de bits. Envie bits de entrada ($x = 0$ ou $x = 1$) abaixo ou clique diretamente nos estados dos diagramas para inspecionar seu significado.
-          </p>
-
-          <!-- Painel de Controle do Simulador -->
-          <div class="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg space-y-6">
-            
-            <!-- Controles de Entrada de Bits -->
-            <div class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
-              <div class="flex flex-wrap items-center gap-2.5">
-                <button onclick="stepSimulation(0)" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-mono font-bold text-sm flex items-center gap-2 shadow-md shadow-blue-500/20 transition-all">
-                  <i data-lucide="zap" class="w-4 h-4"></i> Enviar Bit x = 0
+              <!-- Toggle Interativo Moore / Mealy -->
+              <div
+                class="inline-flex p-1 rounded-xl bg-slate-200 dark:bg-slate-800 self-start"
+              >
+                <button
+                  id="btn-arch-moore"
+                  onclick="setArchitecture('moore')"
+                  class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-blue-600 text-white shadow"
+                >
+                  Máquina de Moore
                 </button>
-                <button onclick="stepSimulation(1)" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-mono font-bold text-sm flex items-center gap-2 shadow-md shadow-emerald-500/20 transition-all">
-                  <i data-lucide="zap" class="w-4 h-4"></i> Enviar Bit x = 1
-                </button>
-                <button onclick="runDemoSequence()" class="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all">
-                  <i data-lucide="play" class="w-3.5 h-3.5 text-blue-500"></i> Testar "10101"
+                <button
+                  id="btn-arch-mealy"
+                  onclick="setArchitecture('mealy')"
+                  class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300"
+                >
+                  Máquina de Mealy
                 </button>
               </div>
-
-              <button onclick="resetSimulation()" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5 transition-all">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Resetar (Estado A)
-              </button>
             </div>
 
-            <!-- Fita de Histórico Temporal -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between text-xs font-mono text-slate-400">
-                <span>HISTÓRICO DE PULSOS DE CLOCK</span>
-                <span id="step-counter">Ciclo t = 0</span>
-              </div>
-              <div id="history-tape" class="flex items-center gap-2 overflow-x-auto py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 min-h-[68px]">
-                <div class="text-xs font-mono text-slate-400 italic">Nenhum bit enviado ainda. Clique em "Enviar Bit x = 0" ou "x = 1" acima para iniciar!</div>
-              </div>
-            </div>
-
-            <!-- Grid com os Dois Grafos SVG Lado a Lado -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              
-              <!-- GRAFO 1: MOORE (4 Estados) -->
-              <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 flex flex-col justify-between">
-                <div class="flex items-center justify-between mb-2">
-                  <div>
-                    <span class="text-[11px] font-mono uppercase text-blue-500 font-bold">Modelo de Moore (4 Estados)</span>
-                    <h4 class="font-bold text-sm">Saída dentro do Estado</h4>
-                  </div>
-                  <div class="text-right font-mono">
-                    <span class="text-xs text-slate-400 block">Estado: <strong id="moore-curr-state" class="text-blue-500">A (00)</strong></span>
-                    <span class="text-xs text-slate-400 block">Saída z: <strong id="moore-curr-out" class="text-slate-600 dark:text-slate-300">0</strong></span>
-                  </div>
-                </div>
-
-                <!-- SVG Grafo de Moore -->
-                <svg viewBox="0 0 380 310" class="w-full h-auto my-auto select-none">
-                  <defs>
-                    <marker id="m-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
-                    </marker>
-                    <marker id="m-arrow-active" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6"/>
-                    </marker>
-                  </defs>
-
-                  <!-- Arestas Moore -->
-                  <!-- A -> A (x=1) loop -->
-                  <path id="moore-edge-A-1" d="M 65 65 C 35 25, 105 25, 85 55" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="70" y="25" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=1</text>
-
-                  <!-- A -> B (x=0) -->
-                  <path id="moore-edge-A-0" d="M 122 75 Q 190 55 248 75" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="190" y="55" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=0</text>
-
-                  <!-- B -> B (x=0) loop -->
-                  <path id="moore-edge-B-0" d="M 295 55 C 275 25, 345 25, 315 65" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="310" y="25" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=0</text>
-
-                  <!-- B -> C (x=1) -->
-                  <path id="moore-edge-B-1" d="M 295 122 Q 315 175 295 208" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="330" y="170" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=1</text>
-
-                  <!-- C -> B (x=0) -->
-                  <path id="moore-edge-C-0" d="M 272 208 Q 255 165 272 122" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="242" y="170" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=0</text>
-
-                  <!-- C -> D (x=1) -->
-                  <path id="moore-edge-C-1" d="M 248 245 Q 190 265 132 245" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="190" y="272" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=1</text>
-
-                  <!-- D -> D (x=1) loop -->
-                  <path id="moore-edge-D-1" d="M 65 262 C 35 298, 105 298, 85 272" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="70" y="302" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=1</text>
-
-                  <!-- D -> B (x=0) diagonal -->
-                  <path id="moore-edge-D-0" d="M 118 215 Q 175 145 255 105" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#m-arrow)"/>
-                  <text x="168" y="142" text-anchor="middle" class="text-[11px] font-mono fill-slate-500">x=0</text>
-
-                  <!-- Nós Moore -->
-                  <!-- Estado A -->
-                  <g id="moore-node-A" onclick="inspectState('moore', 'A')" class="state-node">
-                    <circle cx="90" cy="88" r="32" class="fill-white dark:fill-slate-900 stroke-blue-500" stroke-width="3"/>
-                    <line x1="65" y1="88" x2="115" y2="88" stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-width="1.5"/>
-                    <text x="90" y="81" text-anchor="middle" class="font-mono font-bold text-xs fill-slate-800 dark:fill-white">A (00)</text>
-                    <text x="90" y="104" text-anchor="middle" class="font-mono text-xs fill-slate-500">z = 0</text>
-                  </g>
-
-                  <!-- Estado B -->
-                  <g id="moore-node-B" onclick="inspectState('moore', 'B')" class="state-node">
-                    <circle cx="285" cy="88" r="32" class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700" stroke-width="2.5"/>
-                    <line x1="260" y1="88" x2="310" y2="88" stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-width="1.5"/>
-                    <text x="285" y="81" text-anchor="middle" class="font-mono font-bold text-xs fill-slate-800 dark:fill-white">B (01)</text>
-                    <text x="285" y="104" text-anchor="middle" class="font-mono text-xs fill-slate-500">z = 0</text>
-                  </g>
-
-                  <!-- Estado C (Detector Ativo z=1) -->
-                  <g id="moore-node-C" onclick="inspectState('moore', 'C')" class="state-node">
-                    <circle cx="285" cy="240" r="32" class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700" stroke-width="2.5"/>
-                    <line x1="260" y1="240" x2="310" y2="240" stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-width="1.5"/>
-                    <text x="285" y="233" text-anchor="middle" class="font-mono font-bold text-xs fill-slate-800 dark:fill-white">C (11)</text>
-                    <text x="285" y="256" text-anchor="middle" class="font-mono font-bold text-xs fill-emerald-500">z = 1</text>
-                  </g>
-
-                  <!-- Estado D -->
-                  <g id="moore-node-D" onclick="inspectState('moore', 'D')" class="state-node">
-                    <circle cx="90" cy="240" r="32" class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700" stroke-width="2.5"/>
-                    <line x1="65" y1="240" x2="115" y2="240" stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-width="1.5"/>
-                    <text x="90" y="233" text-anchor="middle" class="font-mono font-bold text-xs fill-slate-800 dark:fill-white">D (10)</text>
-                    <text x="90" y="256" text-anchor="middle" class="font-mono text-xs fill-slate-500">z = 0</text>
-                  </g>
-                </svg>
-
-                <div id="moore-desc" class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                  <strong>Estado A (Inicial):</strong> Aguardando o primeiro bit '0' da sequência.
-                </div>
-              </div>
-
-              <!-- GRAFO 2: MEALY (2 Estados) -->
-              <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 flex flex-col justify-between">
-                <div class="flex items-center justify-between mb-2">
-                  <div>
-                    <span class="text-[11px] font-mono uppercase text-emerald-500 font-bold">Modelo de Mealy (2 Estados)</span>
-                    <h4 class="font-bold text-sm">Saída nas Transições ($x/z$)</h4>
-                  </div>
-                  <div class="text-right font-mono">
-                    <span class="text-xs text-slate-400 block">Estado: <strong id="mealy-curr-state" class="text-emerald-500">A (0)</strong></span>
-                    <span class="text-xs text-slate-400 block">Saída z: <strong id="mealy-curr-out" class="text-slate-600 dark:text-slate-300">0</strong></span>
-                  </div>
-                </div>
-
-                <!-- SVG Grafo de Mealy -->
-                <svg viewBox="0 0 380 310" class="w-full h-auto my-auto select-none">
-                  <defs>
-                    <marker id="me-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
-                    </marker>
-                    <marker id="me-arrow-active" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
-                    </marker>
-                  </defs>
-
-                  <!-- A -> A (1/0) loop -->
-                  <path id="mealy-edge-A-1" d="M 70 130 C 30 75, 125 75, 95 122" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#me-arrow)"/>
-                  <text x="80" y="78" text-anchor="middle" class="text-xs font-mono fill-slate-500">1 / 0</text>
-
-                  <!-- A -> B (0/0) -->
-                  <path id="mealy-edge-A-0" d="M 125 142 Q 190 105 248 142" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#me-arrow)"/>
-                  <text x="190" y="112" text-anchor="middle" class="text-xs font-mono fill-slate-500">0 / 0</text>
-
-                  <!-- B -> B (0/0) loop -->
-                  <path id="mealy-edge-B-0" d="M 285 122 C 255 75, 350 75, 310 130" fill="none" stroke="#64748b" stroke-width="2" class="edge-path" marker-end="url(#me-arrow)"/>
-                  <text x="302" y="78" text-anchor="middle" class="text-xs font-mono fill-slate-500">0 / 0</text>
-
-                  <!-- B -> A (1/1) Detecção! -->
-                  <path id="mealy-edge-B-1" d="M 252 178 Q 190 215 128 178" fill="none" stroke="#64748b" stroke-width="2.5" class="edge-path" marker-end="url(#me-arrow)"/>
-                  <rect x="155" y="202" width="70" height="22" rx="6" class="fill-emerald-500/15 stroke-emerald-500/40" stroke-width="1"/>
-                  <text x="190" y="217" text-anchor="middle" class="text-xs font-mono font-bold fill-emerald-500">1 / 1</text>
-
-                  <!-- Nó A Mealy -->
-                  <g id="mealy-node-A" onclick="inspectState('mealy', 'A')" class="state-node">
-                    <circle cx="92" cy="160" r="35" class="fill-white dark:fill-slate-900 stroke-emerald-500" stroke-width="3"/>
-                    <text x="92" y="156" text-anchor="middle" class="font-mono font-bold text-sm fill-slate-800 dark:fill-white">A</text>
-                    <text x="92" y="175" text-anchor="middle" class="font-mono text-[11px] fill-slate-400">y = 0</text>
-                  </g>
-
-                  <!-- Nó B Mealy -->
-                  <g id="mealy-node-B" onclick="inspectState('mealy', 'B')" class="state-node">
-                    <circle cx="288" cy="160" r="35" class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700" stroke-width="2.5"/>
-                    <text x="288" y="156" text-anchor="middle" class="font-mono font-bold text-sm fill-slate-800 dark:fill-white">B</text>
-                    <text x="288" y="175" text-anchor="middle" class="font-mono text-[11px] fill-slate-400">y = 1</text>
-                  </g>
-                </svg>
-
-                <div id="mealy-desc" class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                  <strong>Estado A ($y=0$):</strong> Último bit recebido não foi '0'. Basta 1 Flip-Flop para toda a máquina!
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        <!-- SEÇÃO 5: SÍNTESE E MAPAS DE KARNAUGH INTERATIVOS -->
-        <section id="sintese-karnaugh" class="scroll-mt-20 space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm">05</span>
-              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Síntese Lógica e Mapas de Karnaugh</h2>
-            </div>
-
-            <!-- Seletor de Síntese Moore vs Mealy -->
-            <div class="inline-flex p-1 rounded-xl bg-slate-200 dark:bg-slate-800 self-start">
-              <button id="btn-synth-moore" onclick="setSynthesisTab('moore')" class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-blue-600 text-white shadow">
-                Síntese Moore (2 FFs)
-              </button>
-              <button id="btn-synth-mealy" onclick="setSynthesisTab('mealy')" class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300">
-                Síntese Mealy (1 FF)
-              </button>
-            </div>
-          </div>
-
-          <!-- Painel Síntese de MOORE -->
-          <div id="synth-panel-moore" class="space-y-6">
-            <div class="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <!-- Diagrama de Blocos SVG Interativo (Substituindo o ASCII) -->
+            <div
+              class="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
+            >
+              <div
+                class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4"
+              >
                 <div>
-                  <span class="text-xs font-mono text-blue-500 font-bold uppercase">Codificação Gray (4 Estados = 2 Flip-Flops D)</span>
-                  <h3 class="text-lg font-bold mt-0.5">Tabela de Transição Codificada & Mapas de Karnaugh</h3>
+                  <span
+                    id="arch-badge"
+                    class="text-xs font-mono uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 font-semibold"
+                    >Arquitetura de Moore</span
+                  >
+                  <h3 id="arch-title" class="text-base font-bold mt-1">
+                    Saída depende exclusivamente do Estado Atual ($Q$)
+                  </h3>
                 </div>
-                <div class="flex flex-wrap gap-2 text-xs font-mono">
-                  <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800">A = 00</span>
-                  <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800">B = 01</span>
-                  <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 font-bold border border-emerald-500/20">C = 11 (z=1)</span>
-                  <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800">D = 10</span>
+                <span class="text-xs text-slate-400 flex items-center gap-1">
+                  <i
+                    data-lucide="sparkles"
+                    class="w-3.5 h-3.5 text-amber-400"
+                  ></i>
+                  Alterne os botões acima para ver a mudança física no circuito
+                </span>
+              </div>
+
+              <!-- SVG Diagrama de Blocos -->
+              <div class="w-full overflow-x-auto py-2">
+                <svg
+                  viewBox="0 0 760 270"
+                  class="w-full min-w-[600px] h-auto select-none"
+                >
+                  <defs>
+                    <marker
+                      id="arrow-blue"
+                      viewBox="0 0 10 10"
+                      refX="6"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+                    </marker>
+                    <marker
+                      id="arrow-purple"
+                      viewBox="0 0 10 10"
+                      refX="6"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+                    </marker>
+                    <marker
+                      id="arrow-emerald"
+                      viewBox="0 0 10 10"
+                      refX="6"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                    </marker>
+                    <marker
+                      id="arrow-rose"
+                      viewBox="0 0 10 10"
+                      refX="6"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f43f5e" />
+                    </marker>
+                  </defs>
+
+                  <!-- Entrada X -->
+                  <text
+                    x="20"
+                    y="95"
+                    class="text-xs font-mono font-bold fill-blue-500"
+                  >
+                    Entrada (X)
+                  </text>
+                  <path
+                    d="M 20 105 L 155 105"
+                    stroke="#3b82f6"
+                    stroke-width="3"
+                    class="flow-active"
+                    fill="none"
+                    marker-end="url(#arrow-blue)"
+                  />
+
+                  <!-- Caminho Feedforward Exclusivo de Mealy (Entrada X direto para Lógica de Saída) -->
+                  <g
+                    id="mealy-feedforward"
+                    class="opacity-15 transition-opacity duration-500"
+                  >
+                    <circle cx="95" cy="105" r="5" fill="#f43f5e" />
+                    <path
+                      d="M 95 105 L 95 32 L 560 32 L 560 72"
+                      stroke="#f43f5e"
+                      stroke-width="3"
+                      id="mealy-wire"
+                      fill="none"
+                      marker-end="url(#arrow-rose)"
+                    />
+                    <rect
+                      x="245"
+                      y="14"
+                      width="230"
+                      height="24"
+                      rx="6"
+                      fill="#f43f5e"
+                    />
+                    <text
+                      x="360"
+                      y="30"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono font-bold fill-white"
+                    >
+                      Via Direta Assíncrona (Mealy)
+                    </text>
+                  </g>
+
+                  <!-- Bloco 1: Lógica de Próximo Estado (f) -->
+                  <rect
+                    x="165"
+                    y="75"
+                    width="145"
+                    height="90"
+                    rx="14"
+                    class="fill-slate-100 dark:fill-slate-800 stroke-blue-500"
+                    stroke-width="2"
+                  />
+                  <text
+                    x="237"
+                    y="112"
+                    text-anchor="middle"
+                    class="text-xs font-bold fill-slate-800 dark:fill-slate-100"
+                  >
+                    Lógica Comb.
+                  </text>
+                  <text
+                    x="237"
+                    y="130"
+                    text-anchor="middle"
+                    class="text-[11px] font-mono fill-blue-500"
+                  >
+                    Próx. Estado (f)
+                  </text>
+
+                  <!-- Ligação Próximo Estado (D) -->
+                  <path
+                    d="M 310 120 L 365 120"
+                    stroke="#3b82f6"
+                    stroke-width="2.5"
+                    fill="none"
+                    marker-end="url(#arrow-blue)"
+                  />
+                  <text
+                    x="338"
+                    y="110"
+                    text-anchor="middle"
+                    class="text-[10px] font-mono fill-slate-400"
+                  >
+                    Próx. Q
+                  </text>
+
+                  <!-- Bloco 2: Registrador de Estado (Flip-Flops) -->
+                  <rect
+                    x="375"
+                    y="75"
+                    width="110"
+                    height="90"
+                    rx="14"
+                    class="fill-slate-100 dark:fill-slate-800 stroke-purple-500"
+                    stroke-width="2"
+                  />
+                  <text
+                    x="430"
+                    y="110"
+                    text-anchor="middle"
+                    class="text-xs font-bold fill-slate-800 dark:fill-slate-100"
+                  >
+                    Memória
+                  </text>
+                  <text
+                    x="430"
+                    y="128"
+                    text-anchor="middle"
+                    class="text-[11px] font-mono fill-purple-400"
+                  >
+                    Flip-Flops
+                  </text>
+                  <!-- Símbolo de Clock -->
+                  <polygon
+                    points="375,145 387,152 375,159"
+                    fill="none"
+                    stroke="#a855f7"
+                    stroke-width="1.8"
+                  />
+                  <text
+                    x="393"
+                    y="156"
+                    class="text-[10px] font-mono fill-purple-400"
+                  >
+                    CLK
+                  </text>
+
+                  <!-- Saída Q (Estado Atual) -->
+                  <path
+                    d="M 485 120 L 540 120"
+                    stroke="#a855f7"
+                    stroke-width="3"
+                    class="flow-active"
+                    fill="none"
+                    marker-end="url(#arrow-purple)"
+                  />
+                  <text
+                    x="512"
+                    y="108"
+                    text-anchor="middle"
+                    class="text-[11px] font-mono font-bold fill-purple-400"
+                  >
+                    Q (Atual)
+                  </text>
+
+                  <!-- Realimentação de Q para Lógica de Próximo Estado -->
+                  <circle cx="512" cy="120" r="4.5" fill="#a855f7" />
+                  <path
+                    d="M 512 120 L 512 220 L 125 220 L 125 140 L 155 140"
+                    stroke="#a855f7"
+                    stroke-width="2.5"
+                    stroke-dasharray="5 5"
+                    fill="none"
+                    marker-end="url(#arrow-purple)"
+                  />
+                  <text
+                    x="320"
+                    y="240"
+                    text-anchor="middle"
+                    class="text-[11px] font-mono fill-purple-400"
+                  >
+                    Realimentação de Estado Atual (Q)
+                  </text>
+
+                  <!-- Bloco 3: Lógica de Saída (g) -->
+                  <rect
+                    x="550"
+                    y="75"
+                    width="120"
+                    height="90"
+                    rx="14"
+                    class="fill-slate-100 dark:fill-slate-800 stroke-emerald-500"
+                    stroke-width="2"
+                  />
+                  <text
+                    x="610"
+                    y="112"
+                    text-anchor="middle"
+                    class="text-xs font-bold fill-slate-800 dark:fill-slate-100"
+                  >
+                    Lógica Comb.
+                  </text>
+                  <text
+                    x="610"
+                    y="130"
+                    text-anchor="middle"
+                    class="text-[11px] font-mono fill-emerald-500"
+                  >
+                    Saída (g)
+                  </text>
+
+                  <!-- Saída Final Z -->
+                  <path
+                    d="M 670 120 L 735 120"
+                    stroke="#10b981"
+                    stroke-width="3"
+                    class="flow-active"
+                    fill="none"
+                    marker-end="url(#arrow-emerald)"
+                  />
+                  <text
+                    x="715"
+                    y="105"
+                    text-anchor="middle"
+                    class="text-xs font-mono font-bold fill-emerald-500"
+                  >
+                    Saída (Z)
+                  </text>
+                </svg>
+              </div>
+
+              <!-- Explicação Dinâmica -->
+              <div
+                id="arch-explanation"
+                class="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed"
+              >
+                Na <strong>Máquina de Moore</strong>, a linha vermelha superior
+                está desconectada. A saída $Z$ é calculada apenas a partir dos
+                Flip-Flops ($Q$). Por isso, nos diagramas de estado, a saída
+                fica escrita <strong>dentro da bolinha do estado</strong>. Ela é
+                mais segura contra ruídos nas entradas, mas geralmente precisa
+                de mais estados.
+              </div>
+            </div>
+
+            <!-- Tabela Comparativa Direta -->
+            <div
+              class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
+            >
+              <table
+                class="w-full text-left border-collapse text-xs sm:text-sm"
+              >
+                <thead>
+                  <tr
+                    class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-mono text-xs uppercase text-slate-500"
+                  >
+                    <th class="p-4">Critério</th>
+                    <th class="p-4 text-blue-600 dark:text-blue-400">
+                      Máquina de Moore
+                    </th>
+                    <th class="p-4 text-emerald-600 dark:text-emerald-400">
+                      Máquina de Mealy
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  <tr>
+                    <td class="p-4 font-semibold">Dependência da Saída</td>
+                    <td class="p-4">Apenas do Estado Atual: $Z = g(Q)$</td>
+                    <td class="p-4">Estado Atual e Entrada: $Z = g(Q, X)$</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-semibold">Representação no Grafo</td>
+                    <td class="p-4">
+                      Dentro do círculo do estado:
+                      <code class="font-mono text-blue-500">Estado / Z</code>
+                    </td>
+                    <td class="p-4">
+                      Nas setas de transição:
+                      <code class="font-mono text-emerald-500">X / Z</code>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-semibold">Quantidade de Estados</td>
+                    <td class="p-4">
+                      Maior (ex: 4 estados para detector "01")
+                    </td>
+                    <td class="p-4">
+                      Menor (ex: 2 estados para detector "01")
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-semibold">Velocidade de Resposta</td>
+                    <td class="p-4">Síncrona (aguarda a borda do clock)</td>
+                    <td class="p-4">Mais rápida (reage imediatamente a $X$)</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-semibold">Sensibilidade a Ruídos</td>
+                    <td class="p-4">
+                      Alta imunidade (saída filtrada pelos FFs)
+                    </td>
+                    <td class="p-4">
+                      Sujeita a <em>glitches</em> se $X$ oscilar
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- SEÇÃO 3: METODOLOGIA EM 6 PASSOS -->
+          <section id="fluxo-projeto" class="scroll-mt-20 space-y-6">
+            <div class="flex items-center gap-3">
+              <span
+                class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm"
+                >03</span
+              >
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+                Roteiro de Projeto em 6 Passos
+              </h2>
+            </div>
+
+            <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-base">
+              Todo projeto de circuito sequencial síncrono em PCS3115 segue uma
+              receita estruturada que transforma um problema em palavras em
+              portas lógicas e Flip-Flops reais:
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  <span class="text-xs font-mono font-bold text-blue-500"
+                    >PASSO 01</span
+                  >
+                  <h3 class="font-bold text-base mt-1 mb-2">
+                    Diagrama de Estados
+                  </h3>
+                  <p
+                    class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                  >
+                    Traduzir o enunciado verbal para um grafo visual com nós
+                    (estados) e setas (transições guiadas pelas entradas).
+                  </p>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400"
+                >
+                  Abstração Comportamental
                 </div>
               </div>
 
-              <!-- Seletor de Equação para Destacar no Mapa K -->
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  <span class="text-xs font-mono font-bold text-blue-500"
+                    >PASSO 02</span
+                  >
+                  <h3 class="font-bold text-base mt-1 mb-2">
+                    Tabela de Estados
+                  </h3>
+                  <p
+                    class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                  >
+                    Tabular todas as transições: linhas representam o estado
+                    atual e colunas mostram o próximo estado e a saída para cada
+                    entrada.
+                  </p>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400"
+                >
+                  Organização Tabular
+                </div>
+              </div>
+
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  <span class="text-xs font-mono font-bold text-purple-500"
+                    >PASSO 03</span
+                  >
+                  <h3 class="font-bold text-base mt-1 mb-2">
+                    Minimização de Estados
+                  </h3>
+                  <p
+                    class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                  >
+                    Identificar e fundir estados equivalentes para reduzir o
+                    número de Flip-Flops necessários na implementação física.
+                  </p>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400"
+                >
+                  Otimização Lógica
+                </div>
+              </div>
+
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  <span class="text-xs font-mono font-bold text-purple-500"
+                    >PASSO 04</span
+                  >
+                  <h3 class="font-bold text-base mt-1 mb-2">
+                    Designação de Estados
+                  </h3>
+                  <p
+                    class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                  >
+                    Atribuir códigos binários ($y_1, y_0$) para cada estado
+                    simbólico ($A, B, C...$). O uso de código Gray vizinho ajuda
+                    a simplificar mapas.
+                  </p>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400"
+                >
+                  Codificação Binária
+                </div>
+              </div>
+
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  <span class="text-xs font-mono font-bold text-emerald-500"
+                    >PASSO 05</span
+                  >
+                  <h3 class="font-bold text-base mt-1 mb-2">
+                    Mapas de Karnaugh
+                  </h3>
+                  <p
+                    class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                  >
+                    Escolher o tipo de Flip-Flop (geralmente Tipo D, onde $D =
+                    Y$) e extrair as equações booleanas mínimas para cada bit de
+                    estado e saída.
+                  </p>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400"
+                >
+                  Síntese Algébrica
+                </div>
+              </div>
+
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  <span class="text-xs font-mono font-bold text-emerald-500"
+                    >PASSO 06</span
+                  >
+                  <h3 class="font-bold text-base mt-1 mb-2">
+                    Esquemático Final
+                  </h3>
+                  <p
+                    class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"
+                  >
+                    Desenhar ou simular o circuito lógico conectando as portas
+                    AND, OR e NOT às entradas dos Flip-Flops sincronizados pelo
+                    clock.
+                  </p>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono text-slate-400"
+                >
+                  Implementação em Hardware
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SEÇÃO 4: SIMULADOR INTERATIVO DETECTOR "01" -->
+          <section id="estudo-caso" class="scroll-mt-20 space-y-6">
+            <div class="flex items-center gap-3">
+              <span
+                class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm"
+                >04</span
+              >
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+                Laboratório Interativo: Detector de Sequência "01"
+              </h2>
+            </div>
+
+            <p
+              class="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed"
+            >
+              Vamos comparar na prática como as máquinas de
+              <strong>Moore (4 estados)</strong> e
+              <strong>Mealy (2 estados)</strong> reagem exatamente à mesma
+              sequência de bits. Envie bits de entrada ($x = 0$ ou $x = 1$)
+              abaixo ou clique diretamente nos estados dos diagramas para
+              inspecionar seu significado.
+            </p>
+
+            <!-- Painel de Controle do Simulador -->
+            <div
+              class="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg space-y-6"
+            >
+              <!-- Controles de Entrada de Bits -->
+              <div
+                class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800"
+              >
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button
+                    onclick="stepSimulation(0)"
+                    class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-mono font-bold text-sm flex items-center gap-2 shadow-md shadow-blue-500/20 transition-all"
+                  >
+                    <i data-lucide="zap" class="w-4 h-4"></i> Enviar Bit x = 0
+                  </button>
+                  <button
+                    onclick="stepSimulation(1)"
+                    class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-mono font-bold text-sm flex items-center gap-2 shadow-md shadow-emerald-500/20 transition-all"
+                  >
+                    <i data-lucide="zap" class="w-4 h-4"></i> Enviar Bit x = 1
+                  </button>
+                  <button
+                    onclick="runDemoSequence()"
+                    class="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all"
+                  >
+                    <i data-lucide="play" class="w-3.5 h-3.5 text-blue-500"></i>
+                    Testar "10101"
+                  </button>
+                </div>
+
+                <button
+                  onclick="resetSimulation()"
+                  class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5 transition-all"
+                >
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Resetar
+                  (Estado A)
+                </button>
+              </div>
+
+              <!-- Fita de Histórico Temporal -->
               <div class="space-y-2">
-                <span class="text-xs font-mono text-slate-400 block">CLIQUE EM UMA FUNÇÃO PARA DESTACAR OS AGRUPAMENTOS NO MAPA:</span>
-                <div class="flex flex-wrap gap-2">
-                  <button onclick="highlightMooreKmap('Y1')" id="kbtn-Y1" class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-blue-600 text-white shadow transition-all">
-                    Próximo Estado $Y_1 = x \cdot (y_1 + y_0)$
-                  </button>
-                  <button onclick="highlightMooreKmap('Y0')" id="kbtn-Y0" class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all">
-                    Próximo Estado $Y_0 = \overline{x} + \overline{y_1} \cdot y_0$
-                  </button>
-                  <button onclick="highlightMooreKmap('z')" id="kbtn-z" class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all">
-                    Saída Moore $z = y_1 \cdot y_0$
-                  </button>
+                <div
+                  class="flex items-center justify-between text-xs font-mono text-slate-400"
+                >
+                  <span>HISTÓRICO DE PULSOS DE CLOCK</span>
+                  <span id="step-counter">Ciclo t = 0</span>
                 </div>
-              </div>
-
-              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                <!-- Tabela de Excitação Moore -->
-                <div class="lg:col-span-6 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                  <table class="w-full text-center text-xs font-mono">
-                    <thead class="bg-slate-100 dark:bg-slate-800/70 text-slate-500">
-                      <tr>
-                        <th class="py-2.5 px-2">Estado</th>
-                        <th class="py-2.5 px-2">$y_1 y_0$</th>
-                        <th class="py-2.5 px-2 text-blue-500">$Y_1 Y_0$ ($x=0$)</th>
-                        <th class="py-2.5 px-2 text-purple-500">$Y_1 Y_0$ ($x=1$)</th>
-                        <th class="py-2.5 px-2 text-emerald-500">Saída $z$</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                      <tr>
-                        <td class="py-2.5 font-bold">A</td>
-                        <td>0 0</td>
-                        <td>0 1 (B)</td>
-                        <td>0 0 (A)</td>
-                        <td>0</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2.5 font-bold">B</td>
-                        <td>0 1</td>
-                        <td>0 1 (B)</td>
-                        <td class="font-bold text-blue-500">1 1 (C)</td>
-                        <td>0</td>
-                      </tr>
-                      <tr class="bg-emerald-500/5">
-                        <td class="py-2.5 font-bold text-emerald-500">C</td>
-                        <td class="font-bold text-emerald-500">1 1</td>
-                        <td>0 1 (B)</td>
-                        <td>1 0 (D)</td>
-                        <td class="font-bold text-emerald-500">1</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2.5 font-bold">D</td>
-                        <td>1 0</td>
-                        <td>0 1 (B)</td>
-                        <td>1 0 (D)</td>
-                        <td>0</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Mapa de Karnaugh Interativo -->
-                <div class="lg:col-span-6 p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-col items-center">
-                  <div class="w-full flex items-center justify-between mb-3">
-                    <span id="kmap-title" class="text-xs font-mono font-bold text-blue-500">Mapa de Karnaugh para $Y_1$ ($D_1$)</span>
-                    <span class="text-[11px] font-mono text-slate-400">Linhas: $y_1 y_0$ • Colunas: $x$</span>
-                  </div>
-
-                  <div class="grid grid-cols-3 gap-2 w-full max-w-[280px] font-mono text-sm text-center">
-                    <div class="p-2 text-xs text-slate-400 flex items-center justify-center">$y_1 y_0 \setminus x$</div>
-                    <div class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg">$x = 0$</div>
-                    <div class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg">$x = 1$</div>
-
-                    <div class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center">00 (A)</div>
-                    <div id="kcell-00-0" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">0</div>
-                    <div id="kcell-00-1" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">0</div>
-
-                    <div class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center">01 (B)</div>
-                    <div id="kcell-01-0" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">0</div>
-                    <div id="kcell-01-1" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">1</div>
-
-                    <div class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center">11 (C)</div>
-                    <div id="kcell-11-0" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">0</div>
-                    <div id="kcell-11-1" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">1</div>
-
-                    <div class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center">10 (D)</div>
-                    <div id="kcell-10-0" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">0</div>
-                    <div id="kcell-10-1" class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold">1</div>
-                  </div>
-
-                  <div id="kmap-explanation" class="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-slate-700 dark:text-slate-300 w-full text-center font-mono">
-                    Agrupando os pares na coluna x=1: Y₁ = x·y₀ + x·y₁ = x·(y₁ + y₀)
+                <div
+                  id="history-tape"
+                  class="flex items-center gap-2 overflow-x-auto py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 min-h-[68px]"
+                >
+                  <div class="text-xs font-mono text-slate-400 italic">
+                    Nenhum bit enviado ainda. Clique em "Enviar Bit x = 0" ou "x
+                    = 1" acima para iniciar!
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Painel Síntese de MEALY (Oculto por padrão) -->
-          <div id="synth-panel-mealy" class="hidden space-y-6">
-            <div class="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-                <div>
-                  <span class="text-xs font-mono text-emerald-500 font-bold uppercase">Codificação Mínima (2 Estados = Apenas 1 Flip-Flop D)</span>
-                  <h3 class="text-lg font-bold mt-0.5">Economia Extrema de Hardware com Mealy</h3>
-                </div>
-                <div class="flex gap-2 text-xs font-mono">
-                  <span class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800">Estado A: y = 0</span>
-                  <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 font-bold">Estado B: y = 1</span>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                  <table class="w-full text-center text-xs font-mono">
-                    <thead class="bg-slate-100 dark:bg-slate-800/70 text-slate-500">
-                      <tr>
-                        <th class="py-3 px-2">Estado Atual (y)</th>
-                        <th class="py-3 px-2">Próx. Y (x=0)</th>
-                        <th class="py-3 px-2">Próx. Y (x=1)</th>
-                        <th class="py-3 px-2">Saída z (x=0)</th>
-                        <th class="py-3 px-2 text-emerald-500">Saída z (x=1)</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                      <tr>
-                        <td class="py-3 font-bold">A (y = 0)</td>
-                        <td class="text-blue-500 font-bold">1 (B)</td>
-                        <td>0 (A)</td>
-                        <td>0</td>
-                        <td>0</td>
-                      </tr>
-                      <tr>
-                        <td class="py-3 font-bold">B (y = 1)</td>
-                        <td class="text-blue-500 font-bold">1 (B)</td>
-                        <td>0 (A)</td>
-                        <td>0</td>
-                        <td class="font-bold text-emerald-500 bg-emerald-500/10">1</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div class="p-5 rounded-2xl bg-slate-900 text-white space-y-4 flex flex-col justify-center">
-                  <div class="text-xs font-mono uppercase text-emerald-400">Inspeção Direta das Equações</div>
-                  <div class="space-y-2 text-sm">
-                    <p class="text-slate-300">Observe a coluna de Próximo Estado ($Y$): ela vale $1$ sempre que $x = 0$ e vale $0$ sempre que $x = 1$, independentemente de $y$!</p>
-                    <div class="p-3 rounded-xl bg-slate-800 font-mono text-blue-300">
-                      $$D = Y = \overline{x}$$
+              <!-- Grid com os Dois Grafos SVG Lado a Lado -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- GRAFO 1: MOORE (4 Estados) -->
+                <div
+                  class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 flex flex-col justify-between"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <span
+                        class="text-[11px] font-mono uppercase text-blue-500 font-bold"
+                        >Modelo de Moore (4 Estados)</span
+                      >
+                      <h4 class="font-bold text-sm">Saída dentro do Estado</h4>
                     </div>
-                    <p class="text-slate-300 pt-2">Já a saída $z$ só é ativada na combinação única onde estamos no estado $B$ ($y=1$) e chega a entrada $x=1$:</p>
-                    <div class="p-3 rounded-xl bg-slate-800 font-mono text-emerald-300">
-                      $$z = x \cdot y$$
+                    <div class="text-right font-mono">
+                      <span class="text-xs text-slate-400 block"
+                        >Estado:
+                        <strong id="moore-curr-state" class="text-blue-500"
+                          >A (00)</strong
+                        ></span
+                      >
+                      <span class="text-xs text-slate-400 block"
+                        >Saída z:
+                        <strong
+                          id="moore-curr-out"
+                          class="text-slate-600 dark:text-slate-300"
+                          >0</strong
+                        ></span
+                      >
                     </div>
                   </div>
+
+                  <!-- SVG Grafo de Moore -->
+                  <svg
+                    viewBox="0 0 380 310"
+                    class="w-full h-auto my-auto select-none"
+                  >
+                    <defs>
+                      <marker
+                        id="m-arrow"
+                        viewBox="0 0 10 10"
+                        refX="7"
+                        refY="5"
+                        markerWidth="6"
+                        markerHeight="6"
+                        orient="auto"
+                      >
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                      </marker>
+                      <marker
+                        id="m-arrow-active"
+                        viewBox="0 0 10 10"
+                        refX="7"
+                        refY="5"
+                        markerWidth="6"
+                        markerHeight="6"
+                        orient="auto"
+                      >
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+                      </marker>
+                    </defs>
+
+                    <!-- Arestas Moore -->
+                    <!-- A -> A (x=1) loop -->
+                    <path
+                      id="moore-edge-A-1"
+                      d="M 65 65 C 35 25, 105 25, 85 55"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="70"
+                      y="25"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=1
+                    </text>
+
+                    <!-- A -> B (x=0) -->
+                    <path
+                      id="moore-edge-A-0"
+                      d="M 122 75 Q 190 55 248 75"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="190"
+                      y="55"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=0
+                    </text>
+
+                    <!-- B -> B (x=0) loop -->
+                    <path
+                      id="moore-edge-B-0"
+                      d="M 295 55 C 275 25, 345 25, 315 65"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="310"
+                      y="25"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=0
+                    </text>
+
+                    <!-- B -> C (x=1) -->
+                    <path
+                      id="moore-edge-B-1"
+                      d="M 295 122 Q 315 175 295 208"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="330"
+                      y="170"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=1
+                    </text>
+
+                    <!-- C -> B (x=0) -->
+                    <path
+                      id="moore-edge-C-0"
+                      d="M 272 208 Q 255 165 272 122"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="242"
+                      y="170"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=0
+                    </text>
+
+                    <!-- C -> D (x=1) -->
+                    <path
+                      id="moore-edge-C-1"
+                      d="M 248 245 Q 190 265 132 245"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="190"
+                      y="272"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=1
+                    </text>
+
+                    <!-- D -> D (x=1) loop -->
+                    <path
+                      id="moore-edge-D-1"
+                      d="M 65 262 C 35 298, 105 298, 85 272"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="70"
+                      y="302"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=1
+                    </text>
+
+                    <!-- D -> B (x=0) diagonal -->
+                    <path
+                      id="moore-edge-D-0"
+                      d="M 118 215 Q 175 145 255 105"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#m-arrow)"
+                    />
+                    <text
+                      x="168"
+                      y="142"
+                      text-anchor="middle"
+                      class="text-[11px] font-mono fill-slate-500"
+                    >
+                      x=0
+                    </text>
+
+                    <!-- Nós Moore -->
+                    <!-- Estado A -->
+                    <g
+                      id="moore-node-A"
+                      onclick="inspectState('moore', 'A')"
+                      class="state-node"
+                    >
+                      <circle
+                        cx="90"
+                        cy="88"
+                        r="32"
+                        class="fill-white dark:fill-slate-900 stroke-blue-500"
+                        stroke-width="3"
+                      />
+                      <line
+                        x1="65"
+                        y1="88"
+                        x2="115"
+                        y2="88"
+                        stroke="currentColor"
+                        class="text-slate-200 dark:text-slate-700"
+                        stroke-width="1.5"
+                      />
+                      <text
+                        x="90"
+                        y="81"
+                        text-anchor="middle"
+                        class="font-mono font-bold text-xs fill-slate-800 dark:fill-white"
+                      >
+                        A (00)
+                      </text>
+                      <text
+                        x="90"
+                        y="104"
+                        text-anchor="middle"
+                        class="font-mono text-xs fill-slate-500"
+                      >
+                        z = 0
+                      </text>
+                    </g>
+
+                    <!-- Estado B -->
+                    <g
+                      id="moore-node-B"
+                      onclick="inspectState('moore', 'B')"
+                      class="state-node"
+                    >
+                      <circle
+                        cx="285"
+                        cy="88"
+                        r="32"
+                        class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700"
+                        stroke-width="2.5"
+                      />
+                      <line
+                        x1="260"
+                        y1="88"
+                        x2="310"
+                        y2="88"
+                        stroke="currentColor"
+                        class="text-slate-200 dark:text-slate-700"
+                        stroke-width="1.5"
+                      />
+                      <text
+                        x="285"
+                        y="81"
+                        text-anchor="middle"
+                        class="font-mono font-bold text-xs fill-slate-800 dark:fill-white"
+                      >
+                        B (01)
+                      </text>
+                      <text
+                        x="285"
+                        y="104"
+                        text-anchor="middle"
+                        class="font-mono text-xs fill-slate-500"
+                      >
+                        z = 0
+                      </text>
+                    </g>
+
+                    <!-- Estado C (Detector Ativo z=1) -->
+                    <g
+                      id="moore-node-C"
+                      onclick="inspectState('moore', 'C')"
+                      class="state-node"
+                    >
+                      <circle
+                        cx="285"
+                        cy="240"
+                        r="32"
+                        class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700"
+                        stroke-width="2.5"
+                      />
+                      <line
+                        x1="260"
+                        y1="240"
+                        x2="310"
+                        y2="240"
+                        stroke="currentColor"
+                        class="text-slate-200 dark:text-slate-700"
+                        stroke-width="1.5"
+                      />
+                      <text
+                        x="285"
+                        y="233"
+                        text-anchor="middle"
+                        class="font-mono font-bold text-xs fill-slate-800 dark:fill-white"
+                      >
+                        C (11)
+                      </text>
+                      <text
+                        x="285"
+                        y="256"
+                        text-anchor="middle"
+                        class="font-mono font-bold text-xs fill-emerald-500"
+                      >
+                        z = 1
+                      </text>
+                    </g>
+
+                    <!-- Estado D -->
+                    <g
+                      id="moore-node-D"
+                      onclick="inspectState('moore', 'D')"
+                      class="state-node"
+                    >
+                      <circle
+                        cx="90"
+                        cy="240"
+                        r="32"
+                        class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700"
+                        stroke-width="2.5"
+                      />
+                      <line
+                        x1="65"
+                        y1="240"
+                        x2="115"
+                        y2="240"
+                        stroke="currentColor"
+                        class="text-slate-200 dark:text-slate-700"
+                        stroke-width="1.5"
+                      />
+                      <text
+                        x="90"
+                        y="233"
+                        text-anchor="middle"
+                        class="font-mono font-bold text-xs fill-slate-800 dark:fill-white"
+                      >
+                        D (10)
+                      </text>
+                      <text
+                        x="90"
+                        y="256"
+                        text-anchor="middle"
+                        class="font-mono text-xs fill-slate-500"
+                      >
+                        z = 0
+                      </text>
+                    </g>
+                  </svg>
+
+                  <div
+                    id="moore-desc"
+                    class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300"
+                  >
+                    <strong>Estado A (Inicial):</strong> Aguardando o primeiro
+                    bit '0' da sequência.
+                  </div>
+                </div>
+
+                <!-- GRAFO 2: MEALY (2 Estados) -->
+                <div
+                  class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 flex flex-col justify-between"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <span
+                        class="text-[11px] font-mono uppercase text-emerald-500 font-bold"
+                        >Modelo de Mealy (2 Estados)</span
+                      >
+                      <h4 class="font-bold text-sm">
+                        Saída nas Transições ($x/z$)
+                      </h4>
+                    </div>
+                    <div class="text-right font-mono">
+                      <span class="text-xs text-slate-400 block"
+                        >Estado:
+                        <strong id="mealy-curr-state" class="text-emerald-500"
+                          >A (0)</strong
+                        ></span
+                      >
+                      <span class="text-xs text-slate-400 block"
+                        >Saída z:
+                        <strong
+                          id="mealy-curr-out"
+                          class="text-slate-600 dark:text-slate-300"
+                          >0</strong
+                        ></span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- SVG Grafo de Mealy -->
+                  <svg
+                    viewBox="0 0 380 310"
+                    class="w-full h-auto my-auto select-none"
+                  >
+                    <defs>
+                      <marker
+                        id="me-arrow"
+                        viewBox="0 0 10 10"
+                        refX="7"
+                        refY="5"
+                        markerWidth="6"
+                        markerHeight="6"
+                        orient="auto"
+                      >
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                      </marker>
+                      <marker
+                        id="me-arrow-active"
+                        viewBox="0 0 10 10"
+                        refX="7"
+                        refY="5"
+                        markerWidth="6"
+                        markerHeight="6"
+                        orient="auto"
+                      >
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                      </marker>
+                    </defs>
+
+                    <!-- A -> A (1/0) loop -->
+                    <path
+                      id="mealy-edge-A-1"
+                      d="M 70 130 C 30 75, 125 75, 95 122"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#me-arrow)"
+                    />
+                    <text
+                      x="80"
+                      y="78"
+                      text-anchor="middle"
+                      class="text-xs font-mono fill-slate-500"
+                    >
+                      1 / 0
+                    </text>
+
+                    <!-- A -> B (0/0) -->
+                    <path
+                      id="mealy-edge-A-0"
+                      d="M 125 142 Q 190 105 248 142"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#me-arrow)"
+                    />
+                    <text
+                      x="190"
+                      y="112"
+                      text-anchor="middle"
+                      class="text-xs font-mono fill-slate-500"
+                    >
+                      0 / 0
+                    </text>
+
+                    <!-- B -> B (0/0) loop -->
+                    <path
+                      id="mealy-edge-B-0"
+                      d="M 285 122 C 255 75, 350 75, 310 130"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2"
+                      class="edge-path"
+                      marker-end="url(#me-arrow)"
+                    />
+                    <text
+                      x="302"
+                      y="78"
+                      text-anchor="middle"
+                      class="text-xs font-mono fill-slate-500"
+                    >
+                      0 / 0
+                    </text>
+
+                    <!-- B -> A (1/1) Detecção! -->
+                    <path
+                      id="mealy-edge-B-1"
+                      d="M 252 178 Q 190 215 128 178"
+                      fill="none"
+                      stroke="#64748b"
+                      stroke-width="2.5"
+                      class="edge-path"
+                      marker-end="url(#me-arrow)"
+                    />
+                    <rect
+                      x="155"
+                      y="202"
+                      width="70"
+                      height="22"
+                      rx="6"
+                      class="fill-emerald-500/15 stroke-emerald-500/40"
+                      stroke-width="1"
+                    />
+                    <text
+                      x="190"
+                      y="217"
+                      text-anchor="middle"
+                      class="text-xs font-mono font-bold fill-emerald-500"
+                    >
+                      1 / 1
+                    </text>
+
+                    <!-- Nó A Mealy -->
+                    <g
+                      id="mealy-node-A"
+                      onclick="inspectState('mealy', 'A')"
+                      class="state-node"
+                    >
+                      <circle
+                        cx="92"
+                        cy="160"
+                        r="35"
+                        class="fill-white dark:fill-slate-900 stroke-emerald-500"
+                        stroke-width="3"
+                      />
+                      <text
+                        x="92"
+                        y="156"
+                        text-anchor="middle"
+                        class="font-mono font-bold text-sm fill-slate-800 dark:fill-white"
+                      >
+                        A
+                      </text>
+                      <text
+                        x="92"
+                        y="175"
+                        text-anchor="middle"
+                        class="font-mono text-[11px] fill-slate-400"
+                      >
+                        y = 0
+                      </text>
+                    </g>
+
+                    <!-- Nó B Mealy -->
+                    <g
+                      id="mealy-node-B"
+                      onclick="inspectState('mealy', 'B')"
+                      class="state-node"
+                    >
+                      <circle
+                        cx="288"
+                        cy="160"
+                        r="35"
+                        class="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-700"
+                        stroke-width="2.5"
+                      />
+                      <text
+                        x="288"
+                        y="156"
+                        text-anchor="middle"
+                        class="font-mono font-bold text-sm fill-slate-800 dark:fill-white"
+                      >
+                        B
+                      </text>
+                      <text
+                        x="288"
+                        y="175"
+                        text-anchor="middle"
+                        class="font-mono text-[11px] fill-slate-400"
+                      >
+                        y = 1
+                      </text>
+                    </g>
+                  </svg>
+
+                  <div
+                    id="mealy-desc"
+                    class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300"
+                  >
+                    <strong>Estado A ($y=0$):</strong> Último bit recebido não
+                    foi '0'. Basta 1 Flip-Flop para toda a máquina!
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <!-- SEÇÃO 6: QUIZ RÁPIDO DE REVISÃO -->
-        <section id="revisao" class="scroll-mt-20 space-y-6">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm">06</span>
-            <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Autoavaliação Rápida para a Prova</h2>
-          </div>
+          <!-- SEÇÃO 5: SÍNTESE E MAPAS DE KARNAUGH INTERATIVOS -->
+          <section id="sintese-karnaugh" class="scroll-mt-20 space-y-6">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              <div class="flex items-center gap-3">
+                <span
+                  class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm"
+                  >05</span
+                >
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+                  Síntese Lógica e Mapas de Karnaugh
+                </h2>
+              </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="quiz-container">
-            <!-- Questão 1 -->
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
-              <span class="text-xs font-mono text-blue-500 font-semibold">QUESTÃO 01</span>
-              <p class="font-bold text-sm">Por que o modelo de Mealy costuma exigir menos estados que o modelo de Moore para resolver o mesmo problema?</p>
-              <div class="space-y-2 pt-1">
-                <button onclick="checkQuiz(this, false, 'q1')" class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all">
-                  A) Porque Mealy não utiliza Flip-Flops nem sinal de Clock.
+              <!-- Seletor de Síntese Moore vs Mealy -->
+              <div
+                class="inline-flex p-1 rounded-xl bg-slate-200 dark:bg-slate-800 self-start"
+              >
+                <button
+                  id="btn-synth-moore"
+                  onclick="setSynthesisTab('moore')"
+                  class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-blue-600 text-white shadow"
+                >
+                  Síntese Moore (2 FFs)
                 </button>
-                <button onclick="checkQuiz(this, true, 'q1')" class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all">
-                  B) Porque a saída pode mudar imediatamente com a entrada atual nas transições, sem precisar criar um estado extra só para exibir a saída.
+                <button
+                  id="btn-synth-mealy"
+                  onclick="setSynthesisTab('mealy')"
+                  class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300"
+                >
+                  Síntese Mealy (1 FF)
                 </button>
               </div>
-              <p id="q1-feedback" class="hidden text-xs font-mono pt-1"></p>
             </div>
 
-            <!-- Questão 2 -->
-            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
-              <span class="text-xs font-mono text-blue-500 font-semibold">QUESTÃO 02</span>
-              <p class="font-bold text-sm">Se uma máquina possui 5 estados distintos após a etapa de minimização, qual é o número mínimo de Flip-Flops necessários?</p>
-              <div class="space-y-2 pt-1">
-                <button onclick="checkQuiz(this, false, 'q2')" class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all">
-                  A) 2 Flip-Flops (pois $2^2 = 4$ estados).
-                </button>
-                <button onclick="checkQuiz(this, true, 'q2')" class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all">
-                  B) 3 Flip-Flops (pois $2^3 = 8 \ge 5$, restando 3 combinações como <em>don't care</em>).
-                </button>
+            <!-- Painel Síntese de MOORE -->
+            <div id="synth-panel-moore" class="space-y-6">
+              <div
+                class="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6"
+              >
+                <div
+                  class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4"
+                >
+                  <div>
+                    <span
+                      class="text-xs font-mono text-blue-500 font-bold uppercase"
+                      >Codificação Gray (4 Estados = 2 Flip-Flops D)</span
+                    >
+                    <h3 class="text-lg font-bold mt-0.5">
+                      Tabela de Transição Codificada & Mapas de Karnaugh
+                    </h3>
+                  </div>
+                  <div class="flex flex-wrap gap-2 text-xs font-mono">
+                    <span
+                      class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800"
+                      >A = 00</span
+                    >
+                    <span
+                      class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800"
+                      >B = 01</span
+                    >
+                    <span
+                      class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 font-bold border border-emerald-500/20"
+                      >C = 11 (z=1)</span
+                    >
+                    <span
+                      class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800"
+                      >D = 10</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Seletor de Equação para Destacar no Mapa K -->
+                <div class="space-y-2">
+                  <span class="text-xs font-mono text-slate-400 block"
+                    >CLIQUE EM UMA FUNÇÃO PARA DESTACAR OS AGRUPAMENTOS NO
+                    MAPA:</span
+                  >
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      onclick="highlightMooreKmap('Y1')"
+                      id="kbtn-Y1"
+                      class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-blue-600 text-white shadow transition-all"
+                    >
+                      Próximo Estado $Y_1 = x \cdot (y_1 + y_0)$
+                    </button>
+                    <button
+                      onclick="highlightMooreKmap('Y0')"
+                      id="kbtn-Y0"
+                      class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all"
+                    >
+                      Próximo Estado $Y_0 = \overline{x} + \overline{y_1} \cdot
+                      y_0$
+                    </button>
+                    <button
+                      onclick="highlightMooreKmap('z')"
+                      id="kbtn-z"
+                      class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all"
+                    >
+                      Saída Moore $z = y_1 \cdot y_0$
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  <!-- Tabela de Excitação Moore -->
+                  <div
+                    class="lg:col-span-6 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800"
+                  >
+                    <table class="w-full text-center text-xs font-mono">
+                      <thead
+                        class="bg-slate-100 dark:bg-slate-800/70 text-slate-500"
+                      >
+                        <tr>
+                          <th class="py-2.5 px-2">Estado</th>
+                          <th class="py-2.5 px-2">$y_1 y_0$</th>
+                          <th class="py-2.5 px-2 text-blue-500">
+                            $Y_1 Y_0$ ($x=0$)
+                          </th>
+                          <th class="py-2.5 px-2 text-purple-500">
+                            $Y_1 Y_0$ ($x=1$)
+                          </th>
+                          <th class="py-2.5 px-2 text-emerald-500">
+                            Saída $z$
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody
+                        class="divide-y divide-slate-200 dark:divide-slate-800"
+                      >
+                        <tr>
+                          <td class="py-2.5 font-bold">A</td>
+                          <td>0 0</td>
+                          <td>0 1 (B)</td>
+                          <td>0 0 (A)</td>
+                          <td>0</td>
+                        </tr>
+                        <tr>
+                          <td class="py-2.5 font-bold">B</td>
+                          <td>0 1</td>
+                          <td>0 1 (B)</td>
+                          <td class="font-bold text-blue-500">1 1 (C)</td>
+                          <td>0</td>
+                        </tr>
+                        <tr class="bg-emerald-500/5">
+                          <td class="py-2.5 font-bold text-emerald-500">C</td>
+                          <td class="font-bold text-emerald-500">1 1</td>
+                          <td>0 1 (B)</td>
+                          <td>1 0 (D)</td>
+                          <td class="font-bold text-emerald-500">1</td>
+                        </tr>
+                        <tr>
+                          <td class="py-2.5 font-bold">D</td>
+                          <td>1 0</td>
+                          <td>0 1 (B)</td>
+                          <td>1 0 (D)</td>
+                          <td>0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Mapa de Karnaugh Interativo -->
+                  <div
+                    class="lg:col-span-6 p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-col items-center"
+                  >
+                    <div class="w-full flex items-center justify-between mb-3">
+                      <span
+                        id="kmap-title"
+                        class="text-xs font-mono font-bold text-blue-500"
+                        >Mapa de Karnaugh para $Y_1$ ($D_1$)</span
+                      >
+                      <span class="text-[11px] font-mono text-slate-400"
+                        >Linhas: $y_1 y_0$ • Colunas: $x$</span
+                      >
+                    </div>
+
+                    <div
+                      class="grid grid-cols-3 gap-2 w-full max-w-[280px] font-mono text-sm text-center"
+                    >
+                      <div
+                        class="p-2 text-xs text-slate-400 flex items-center justify-center"
+                      >
+                        $y_1 y_0 \setminus x$
+                      </div>
+                      <div
+                        class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg"
+                      >
+                        $x = 0$
+                      </div>
+                      <div
+                        class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg"
+                      >
+                        $x = 1$
+                      </div>
+
+                      <div
+                        class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center"
+                      >
+                        00 (A)
+                      </div>
+                      <div
+                        id="kcell-00-0"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        0
+                      </div>
+                      <div
+                        id="kcell-00-1"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        0
+                      </div>
+
+                      <div
+                        class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center"
+                      >
+                        01 (B)
+                      </div>
+                      <div
+                        id="kcell-01-0"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        0
+                      </div>
+                      <div
+                        id="kcell-01-1"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        1
+                      </div>
+
+                      <div
+                        class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center"
+                      >
+                        11 (C)
+                      </div>
+                      <div
+                        id="kcell-11-0"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        0
+                      </div>
+                      <div
+                        id="kcell-11-1"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        1
+                      </div>
+
+                      <div
+                        class="p-2 font-bold bg-slate-200/60 dark:bg-slate-800 rounded-lg flex items-center justify-center"
+                      >
+                        10 (D)
+                      </div>
+                      <div
+                        id="kcell-10-0"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        0
+                      </div>
+                      <div
+                        id="kcell-10-1"
+                        class="kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold"
+                      >
+                        1
+                      </div>
+                    </div>
+
+                    <div
+                      id="kmap-explanation"
+                      class="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-slate-700 dark:text-slate-300 w-full text-center font-mono"
+                    >
+                      Agrupando os pares na coluna x=1: Y₁ = x·y₀ + x·y₁ = x·(y₁
+                      + y₀)
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p id="q2-feedback" class="hidden text-xs font-mono pt-1"></p>
             </div>
-          </div>
-        </section>
 
-        <!-- Rodapé Singelo com Créditos -->
-        <footer class="pt-8 pb-4 border-t border-slate-200/70 dark:border-slate-800/60 text-center">
-          <p class="text-[11px] text-slate-400 dark:text-slate-500 font-normal tracking-wide">
-            Preparado por Eduardo Lima Moraes, utilizando Gemini 4 Argon, para a aula de PCS3115
-          </p>
-        </footer>
+            <!-- Painel Síntese de MEALY (Oculto por padrão) -->
+            <div id="synth-panel-mealy" class="hidden space-y-6">
+              <div
+                class="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6"
+              >
+                <div
+                  class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4"
+                >
+                  <div>
+                    <span
+                      class="text-xs font-mono text-emerald-500 font-bold uppercase"
+                      >Codificação Mínima (2 Estados = Apenas 1 Flip-Flop
+                      D)</span
+                    >
+                    <h3 class="text-lg font-bold mt-0.5">
+                      Economia Extrema de Hardware com Mealy
+                    </h3>
+                  </div>
+                  <div class="flex gap-2 text-xs font-mono">
+                    <span
+                      class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800"
+                      >Estado A: y = 0</span
+                    >
+                    <span
+                      class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 font-bold"
+                      >Estado B: y = 1</span
+                    >
+                  </div>
+                </div>
 
-      </div>
-    </main>
-  </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div
+                    class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800"
+                  >
+                    <table class="w-full text-center text-xs font-mono">
+                      <thead
+                        class="bg-slate-100 dark:bg-slate-800/70 text-slate-500"
+                      >
+                        <tr>
+                          <th class="py-3 px-2">Estado Atual (y)</th>
+                          <th class="py-3 px-2">Próx. Y (x=0)</th>
+                          <th class="py-3 px-2">Próx. Y (x=1)</th>
+                          <th class="py-3 px-2">Saída z (x=0)</th>
+                          <th class="py-3 px-2 text-emerald-500">
+                            Saída z (x=1)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody
+                        class="divide-y divide-slate-200 dark:divide-slate-800"
+                      >
+                        <tr>
+                          <td class="py-3 font-bold">A (y = 0)</td>
+                          <td class="text-blue-500 font-bold">1 (B)</td>
+                          <td>0 (A)</td>
+                          <td>0</td>
+                          <td>0</td>
+                        </tr>
+                        <tr>
+                          <td class="py-3 font-bold">B (y = 1)</td>
+                          <td class="text-blue-500 font-bold">1 (B)</td>
+                          <td>0 (A)</td>
+                          <td>0</td>
+                          <td
+                            class="font-bold text-emerald-500 bg-emerald-500/10"
+                          >
+                            1
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-  <!-- Navegação Inferior Mobile (Estilo App PWA) -->
-  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-[#0d1322]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 flex justify-around items-center">
-    <a href="#fundamentos" class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium">
-      <i data-lucide="layers" class="w-4 h-4 mb-0.5"></i>
-      <span>Base</span>
-    </a>
-    <a href="#arquiteturas" class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium">
-      <i data-lucide="git-compare" class="w-4 h-4 mb-0.5"></i>
-      <span>Modelos</span>
-    </a>
-    <a href="#estudo-caso" class="flex flex-col items-center py-1 px-2 text-blue-600 dark:text-blue-400 font-semibold text-[10px]">
-      <i data-lucide="play-circle" class="w-4 h-4 mb-0.5"></i>
-      <span>Simulador</span>
-    </a>
-    <a href="#sintese-karnaugh" class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium">
-      <i data-lucide="grid" class="w-4 h-4 mb-0.5"></i>
-      <span>Mapas K</span>
-    </a>
-    <a href="#revisao" class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium">
-      <i data-lucide="check-circle-2" class="w-4 h-4 mb-0.5"></i>
-      <span>Quiz</span>
-    </a>
-  </nav>
-
-  <!-- Scripts de Interatividade, Renderização Matemática e Lógica da FSM -->
-  <script>
-    // Função dedicada e segura para renderizar todas as fórmulas entre $ e $$
-    function renderMath(targetElement = document.body) {
-      if (typeof renderMathInElement === 'function') {
-        renderMathInElement(targetElement, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false },
-            { left: '\\(', right: '\\)', display: false },
-            { left: '\\[', right: '\\]', display: true }
-          ],
-          throwOnError: false
-        });
-      }
-    }
-
-    // Inicialização de Ícones, Fórmulas Matemáticas e Componentes
-    function initApp() {
-      if (window.lucide) {
-        lucide.createIcons();
-      }
-      renderMath(document.body);
-      highlightMooreKmap('Y1');
-      updateSimVisuals();
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initApp);
-    } else {
-      initApp();
-    }
-    window.addEventListener('load', () => renderMath(document.body));
-
-    // Barra de Progresso de Leitura
-    window.addEventListener('scroll', () => {
-      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
-      document.getElementById('reading-progress').style.width = scrolled + '%';
-    });
-
-    // Alternância de Tema Claro / Escuro com suporte a mudança em tempo real no sistema
-    function toggleTheme() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    }
-    document.getElementById('theme-toggle-desktop').addEventListener('click', toggleTheme);
-    document.getElementById('theme-toggle-mobile').addEventListener('click', toggleTheme);
-
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (!localStorage.getItem('theme')) {
-        document.documentElement.classList.toggle('dark', e.matches);
-      }
-    });
-
-    // ==========================================
-    // 1. SEÇÃO ARQUITETURA: MOORE VS MEALY
-    // ==========================================
-    function setArchitecture(type) {
-      const btnMoore = document.getElementById('btn-arch-moore');
-      const btnMealy = document.getElementById('btn-arch-mealy');
-      const feedforward = document.getElementById('mealy-feedforward');
-      const wire = document.getElementById('mealy-wire');
-      const badge = document.getElementById('arch-badge');
-      const title = document.getElementById('arch-title');
-      const exp = document.getElementById('arch-explanation');
-
-      if (type === 'moore') {
-        btnMoore.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-blue-600 text-white shadow';
-        btnMealy.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300';
-        feedforward.classList.remove('opacity-100');
-        feedforward.classList.add('opacity-15');
-        wire.classList.remove('flow-active');
-        badge.textContent = 'Arquitetura de Moore';
-        badge.className = 'text-xs font-mono uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 font-semibold';
-        title.innerHTML = 'Saída depende exclusivamente do Estado Atual ($Q$)';
-        exp.innerHTML = 'Na <strong>Máquina de Moore</strong>, a linha vermelha superior está desconectada. A saída $Z$ é calculada apenas a partir dos Flip-Flops ($Q$). Por isso, nos diagramas de estado, a saída fica escrita <strong>dentro da bolinha do estado</strong>. Ela é mais segura contra ruídos nas entradas, mas geralmente precisa de mais estados.';
-      } else {
-        btnMealy.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-emerald-600 text-white shadow';
-        btnMoore.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300';
-        feedforward.classList.remove('opacity-15');
-        feedforward.classList.add('opacity-100');
-        wire.classList.add('flow-active');
-        badge.textContent = 'Arquitetura de Mealy';
-        badge.className = 'text-xs font-mono uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold';
-        title.innerHTML = 'Saída depende do Estado Atual ($Q$) e da Entrada ($X$)';
-        exp.innerHTML = 'Na <strong>Máquina de Mealy</strong>, a via direta vermelha está ativa! A entrada $X$ alimenta diretamente o bloco combinacional de saída $g$. Por isso, a saída é anotada <strong>nas setas de transição ($X / Z$)</strong> e responde no mesmo instante em que a entrada muda, economizando Flip-Flops.';
-      }
-      renderMath(title);
-      renderMath(exp);
-    }
-
-    // ==========================================
-    // 2. SIMULADOR PASSO A PASSO (MOORE & MEALY)
-    // ==========================================
-    const mooreMachine = {
-      A: { code: '00', out: 0, next: { 0: 'B', 1: 'A' }, desc: 'Estado A ($00$): Inicial. Nenhum bit $0$ recente detectado. Saída $z = 0$.' },
-      B: { code: '01', out: 0, next: { 0: 'B', 1: 'C' }, desc: 'Estado B ($01$): Bit $0$ detectado! Aguardando $x = 1$ para completar $01$. Saída $z = 0$.' },
-      C: { code: '11', out: 1, next: { 0: 'B', 1: 'D' }, desc: 'Estado C ($11$): Sequência $01$ completa! Saída síncrona ativada ($z = 1$).' },
-      D: { code: '10', out: 0, next: { 0: 'B', 1: 'D' }, desc: 'Estado D ($10$): Recebeu outro bit $1$ após a detecção. Aguardando novo $0$. Saída $z = 0$.' }
-    };
-
-    const mealyMachine = {
-      A: { code: '0', next: { 0: 'B', 1: 'A' }, out: { 0: 0, 1: 0 }, desc: 'Estado A ($y=0$): Nenhum bit $0$ pendente. Se vier $x=0$, avança para B.' },
-      B: { code: '1', next: { 0: 'B', 1: 'A' }, out: { 0: 0, 1: 1 }, desc: 'Estado B ($y=1$): Bit $0$ já armazenado! Se vier $x=1$ agora, a transição emite $z=1$ imediatamente!' }
-    };
-
-    let simState = {
-      moore: 'A',
-      mealy: 'A',
-      lastInput: null,
-      lastMealyOut: 0,
-      step: 0,
-      history: []
-    };
-
-    function stepSimulation(x) {
-      const prevMoore = simState.moore;
-      const prevMealy = simState.mealy;
-
-      const nextMoore = mooreMachine[prevMoore].next[x];
-      const nextMealy = mealyMachine[prevMealy].next[x];
-      const mealyOut = mealyMachine[prevMealy].out[x];
-      const mooreOut = mooreMachine[nextMoore].out;
-
-      simState.step++;
-      simState.lastInput = x;
-      simState.moore = nextMoore;
-      simState.mealy = nextMealy;
-      simState.lastMealyOut = mealyOut;
-
-      simState.history.push({
-        step: simState.step,
-        x: x,
-        mooreTransition: `${prevMoore}→${nextMoore}`,
-        mooreZ: mooreOut,
-        mealyTransition: `${prevMealy}→${nextMealy}`,
-        mealyZ: mealyOut
-      });
-
-      updateSimVisuals(prevMoore, prevMealy, x);
-    }
-
-    function resetSimulation() {
-      simState = { moore: 'A', mealy: 'A', lastInput: null, lastMealyOut: 0, step: 0, history: [] };
-      updateSimVisuals();
-      document.getElementById('history-tape').innerHTML = `<div class="text-xs font-mono text-slate-400 italic">Simulação reiniciada no Estado A. Envie um bit acima!</div>`;
-    }
-
-    function updateSimVisuals(prevMoore = null, prevMealy = null, x = null) {
-      document.getElementById('step-counter').textContent = `Ciclo t = ${simState.step}`;
-
-      // Atualiza Textos Moore
-      const mInfo = mooreMachine[simState.moore];
-      document.getElementById('moore-curr-state').textContent = `${simState.moore} (${mInfo.code})`;
-      const mOutEl = document.getElementById('moore-curr-out');
-      mOutEl.textContent = mInfo.out;
-      mOutEl.className = mInfo.out === 1 ? 'text-emerald-500 font-bold' : 'text-slate-500';
-      const mooreDescEl = document.getElementById('moore-desc');
-      mooreDescEl.innerHTML = `<strong>${mInfo.desc}</strong>`;
-      renderMath(mooreDescEl);
-
-      // Atualiza Textos Mealy
-      const meInfo = mealyMachine[simState.mealy];
-      document.getElementById('mealy-curr-state').textContent = `${simState.mealy} (${meInfo.code})`;
-      const meOutEl = document.getElementById('mealy-curr-out');
-      meOutEl.textContent = simState.lastMealyOut;
-      meOutEl.className = simState.lastMealyOut === 1 ? 'text-emerald-500 font-bold' : 'text-slate-500';
-      const mealyDescEl = document.getElementById('mealy-desc');
-      mealyDescEl.innerHTML = `<strong>${meInfo.desc}</strong>`;
-      renderMath(mealyDescEl);
-
-      // Destaca Nó Ativo Moore
-      ['A', 'B', 'C', 'D'].forEach(st => {
-        const circle = document.querySelector(`#moore-node-${st} circle`);
-        if (st === simState.moore) {
-          circle.setAttribute('class', 'fill-blue-500/10 dark:fill-blue-500/20 stroke-blue-500');
-          circle.setAttribute('stroke-width', '3.5');
-        } else {
-          circle.setAttribute('class', 'fill-white dark:fill-slate-900 stroke-slate-300 dark:stroke-slate-700');
-          circle.setAttribute('stroke-width', '2');
-        }
-      });
-
-      // Destaca Aresta Ativa Moore
-      document.querySelectorAll('[id^="moore-edge-"]').forEach(el => {
-        el.setAttribute('stroke', '#64748b');
-        el.setAttribute('stroke-width', '2');
-        el.setAttribute('marker-end', 'url(#m-arrow)');
-        el.classList.remove('flow-active');
-      });
-      if (prevMoore && x !== null) {
-        const activeEdge = document.getElementById(`moore-edge-${prevMoore}-${x}`);
-        if (activeEdge) {
-          activeEdge.setAttribute('stroke', '#3b82f6');
-          activeEdge.setAttribute('stroke-width', '3');
-          activeEdge.setAttribute('marker-end', 'url(#m-arrow-active)');
-          activeEdge.classList.add('flow-active');
-        }
-      }
-
-      // Destaca Nó Ativo Mealy
-      ['A', 'B'].forEach(st => {
-        const circle = document.querySelector(`#mealy-node-${st} circle`);
-        if (st === simState.mealy) {
-          circle.setAttribute('class', 'fill-emerald-500/10 dark:fill-emerald-500/20 stroke-emerald-500');
-          circle.setAttribute('stroke-width', '3.5');
-        } else {
-          circle.setAttribute('class', 'fill-white dark:fill-slate-900 stroke-slate-300 dark:stroke-slate-700');
-          circle.setAttribute('stroke-width', '2');
-        }
-      });
-
-      // Destaca Aresta Ativa Mealy
-      document.querySelectorAll('[id^="mealy-edge-"]').forEach(el => {
-        el.setAttribute('stroke', '#64748b');
-        el.setAttribute('stroke-width', '2');
-        el.setAttribute('marker-end', 'url(#me-arrow)');
-        el.classList.remove('flow-active');
-      });
-      if (prevMealy && x !== null) {
-        const activeEdge = document.getElementById(`mealy-edge-${prevMealy}-${x}`);
-        if (activeEdge) {
-          activeEdge.setAttribute('stroke', '#10b981');
-          activeEdge.setAttribute('stroke-width', '3');
-          activeEdge.setAttribute('marker-end', 'url(#me-arrow-active)');
-          activeEdge.classList.add('flow-active');
-        }
-      }
-
-      // Renderiza Fita de Histórico
-      if (simState.history.length > 0) {
-        const tape = document.getElementById('history-tape');
-        tape.innerHTML = simState.history.map(item => `
-          <div class="shrink-0 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border ${item.mooreZ === 1 || item.mealyZ === 1 ? 'border-emerald-500/60 shadow-sm shadow-emerald-500/10' : 'border-slate-200 dark:border-slate-800'} text-[11px] font-mono">
-            <div class="flex items-center justify-between gap-3 text-slate-400">
-              <span>t=${item.step}</span>
-              <span class="font-bold text-slate-800 dark:text-white">x=${item.x}</span>
+                  <div
+                    class="p-5 rounded-2xl bg-slate-900 text-white space-y-4 flex flex-col justify-center"
+                  >
+                    <div class="text-xs font-mono uppercase text-emerald-400">
+                      Inspeção Direta das Equações
+                    </div>
+                    <div class="space-y-2 text-sm">
+                      <p class="text-slate-300">
+                        Observe a coluna de Próximo Estado ($Y$): ela vale $1$
+                        sempre que $x = 0$ e vale $0$ sempre que $x = 1$,
+                        independentemente de $y$!
+                      </p>
+                      <div
+                        class="p-3 rounded-xl bg-slate-800 font-mono text-blue-300"
+                      >
+                        $$D = Y = \overline{x}$$
+                      </div>
+                      <p class="text-slate-300 pt-2">
+                        Já a saída $z$ só é ativada na combinação única onde
+                        estamos no estado $B$ ($y=1$) e chega a entrada $x=1$:
+                      </p>
+                      <div
+                        class="p-3 rounded-xl bg-slate-800 font-mono text-emerald-300"
+                      >
+                        $$z = x \cdot y$$
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="text-blue-500">Moore: ${item.mooreTransition} (z=${item.mooreZ})</div>
-            <div class="text-emerald-500">Mealy: ${item.mealyTransition} (z=${item.mealyZ})</div>
-          </div>
-        `).join('');
-        tape.scrollLeft = tape.scrollWidth;
-      }
-    }
+          </section>
 
-    function inspectState(machine, state) {
-      if (machine === 'moore') {
-        const info = mooreMachine[state];
-        const el = document.getElementById('moore-desc');
-        el.innerHTML = `<strong>Inspeção • ${info.desc}</strong>`;
-        renderMath(el);
-      } else {
-        const info = mealyMachine[state];
-        const el = document.getElementById('mealy-desc');
-        el.innerHTML = `<strong>Inspeção • ${info.desc}</strong>`;
-        renderMath(el);
-      }
-    }
+          <!-- SEÇÃO 6: QUIZ RÁPIDO DE REVISÃO -->
+          <section id="revisao" class="scroll-mt-20 space-y-6">
+            <div class="flex items-center gap-3">
+              <span
+                class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center justify-center text-sm"
+                >06</span
+              >
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+                Autoavaliação Rápida para a Prova
+              </h2>
+            </div>
 
-    function runDemoSequence() {
-      resetSimulation();
-      const seq = [1, 0, 1, 0, 1];
-      seq.forEach((bit, idx) => {
-        setTimeout(() => stepSimulation(bit), (idx + 1) * 450);
-      });
-    }
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+              id="quiz-container"
+            >
+              <!-- Questão 1 -->
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3"
+              >
+                <span class="text-xs font-mono text-blue-500 font-semibold"
+                  >QUESTÃO 01</span
+                >
+                <p class="font-bold text-sm">
+                  Por que o modelo de Mealy costuma exigir menos estados que o
+                  modelo de Moore para resolver o mesmo problema?
+                </p>
+                <div class="space-y-2 pt-1">
+                  <button
+                    onclick="checkQuiz(this, false, 'q1')"
+                    class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all"
+                  >
+                    A) Porque Mealy não utiliza Flip-Flops nem sinal de Clock.
+                  </button>
+                  <button
+                    onclick="checkQuiz(this, true, 'q1')"
+                    class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all"
+                  >
+                    B) Porque a saída pode mudar imediatamente com a entrada
+                    atual nas transições, sem precisar criar um estado extra só
+                    para exibir a saída.
+                  </button>
+                </div>
+                <p id="q1-feedback" class="hidden text-xs font-mono pt-1"></p>
+              </div>
 
-    // ==========================================
-    // 3. MAPAS DE KARNAUGH INTERATIVOS
-    // ==========================================
-    function setSynthesisTab(tab) {
-      const pMoore = document.getElementById('synth-panel-moore');
-      const pMealy = document.getElementById('synth-panel-mealy');
-      const bMoore = document.getElementById('btn-synth-moore');
-      const bMealy = document.getElementById('btn-synth-mealy');
+              <!-- Questão 2 -->
+              <div
+                class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3"
+              >
+                <span class="text-xs font-mono text-blue-500 font-semibold"
+                  >QUESTÃO 02</span
+                >
+                <p class="font-bold text-sm">
+                  Se uma máquina possui 5 estados distintos após a etapa de
+                  minimização, qual é o número mínimo de Flip-Flops necessários?
+                </p>
+                <div class="space-y-2 pt-1">
+                  <button
+                    onclick="checkQuiz(this, false, 'q2')"
+                    class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all"
+                  >
+                    A) 2 Flip-Flops (pois $2^2 = 4$ estados).
+                  </button>
+                  <button
+                    onclick="checkQuiz(this, true, 'q2')"
+                    class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-xs transition-all"
+                  >
+                    B) 3 Flip-Flops (pois $2^3 = 8 \ge 5$, restando 3
+                    combinações como <em>don't care</em>).
+                  </button>
+                </div>
+                <p id="q2-feedback" class="hidden text-xs font-mono pt-1"></p>
+              </div>
+            </div>
+          </section>
 
-      if (tab === 'moore') {
-        pMoore.classList.remove('hidden');
-        pMealy.classList.add('hidden');
-        bMoore.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-blue-600 text-white shadow';
-        bMealy.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300';
-        renderMath(pMoore);
-      } else {
-        pMealy.classList.remove('hidden');
-        pMoore.classList.add('hidden');
-        bMealy.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all bg-emerald-600 text-white shadow';
-        bMoore.className = 'px-4 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all text-slate-600 dark:text-slate-300';
-        renderMath(pMealy);
-      }
-    }
+          <!-- Rodapé Singelo com Créditos -->
+          <footer
+            class="pt-8 pb-4 border-t border-slate-200/70 dark:border-slate-800/60 text-center"
+          >
+            <p
+              class="text-[11px] text-slate-400 dark:text-slate-500 font-normal tracking-wide"
+            >
+              Preparado por Eduardo Lima Moraes, utilizando Gemini 4 Argon, para
+              a aula de PCS3115
+            </p>
+          </footer>
+        </div>
+      </main>
+    </div>
 
-    const kmapData = {
-      Y1: {
-        title: 'Mapa de Karnaugh para Próximo Estado $Y_1$ ($D_1$)',
-        values: { '00-0': 0, '00-1': 0, '01-0': 0, '01-1': 1, '11-0': 0, '11-1': 1, '10-0': 0, '10-1': 1 },
-        ones: ['01-1', '11-1', '10-1'],
-        exp: 'Agrupando os três "1"s na coluna $x=1$: $Y_1 = x \\cdot y_0 + x \\cdot y_1 = x \\cdot (y_1 + y_0)$'
-      },
-      Y0: {
-        title: 'Mapa de Karnaugh para Próximo Estado $Y_0$ ($D_0$)',
-        values: { '00-0': 1, '00-1': 0, '01-0': 1, '01-1': 1, '11-0': 1, '11-1': 0, '10-0': 1, '10-1': 0 },
-        ones: ['00-0', '01-0', '11-0', '10-0', '01-1'],
-        exp: 'Coluna inteira $x=0$ vale 1 (termo $\\overline{x}$) mais o par na linha 01 (termo $\\overline{y_1} \\cdot y_0$): $Y_0 = \\overline{x} + \\overline{y_1} \\cdot y_0$'
-      },
-      z: {
-        title: 'Mapa de Karnaugh para a Saída de Moore $z$',
-        values: { '00-0': 0, '00-1': 0, '01-0': 0, '01-1': 0, '11-0': 1, '11-1': 1, '10-0': 0, '10-1': 0 },
-        ones: ['11-0', '11-1'],
-        exp: 'A saída $z$ independe de $x$! Linha 11 inteira ativa: $z = y_1 \\cdot y_0$'
-      }
-    };
+    <!-- Navegação Inferior Mobile (Estilo App PWA) -->
+    <nav
+      class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-[#0d1322]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 flex justify-around items-center"
+    >
+      <a
+        href="#fundamentos"
+        class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium"
+      >
+        <i data-lucide="layers" class="w-4 h-4 mb-0.5"></i>
+        <span>Base</span>
+      </a>
+      <a
+        href="#arquiteturas"
+        class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium"
+      >
+        <i data-lucide="git-compare" class="w-4 h-4 mb-0.5"></i>
+        <span>Modelos</span>
+      </a>
+      <a
+        href="#estudo-caso"
+        class="flex flex-col items-center py-1 px-2 text-blue-600 dark:text-blue-400 font-semibold text-[10px]"
+      >
+        <i data-lucide="play-circle" class="w-4 h-4 mb-0.5"></i>
+        <span>Simulador</span>
+      </a>
+      <a
+        href="#sintese-karnaugh"
+        class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium"
+      >
+        <i data-lucide="grid" class="w-4 h-4 mb-0.5"></i>
+        <span>Mapas K</span>
+      </a>
+      <a
+        href="#revisao"
+        class="flex flex-col items-center py-1 px-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 text-[10px] font-medium"
+      >
+        <i data-lucide="check-circle-2" class="w-4 h-4 mb-0.5"></i>
+        <span>Quiz</span>
+      </a>
+    </nav>
 
-    function highlightMooreKmap(funcKey) {
-      ['Y1', 'Y0', 'z'].forEach(k => {
-        const btn = document.getElementById(`kbtn-${k}`);
-        if (k === funcKey) {
-          btn.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold bg-blue-600 text-white shadow transition-all';
-        } else {
-          btn.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all';
-        }
-      });
-
-      const data = kmapData[funcKey];
-      const titleEl = document.getElementById('kmap-title');
-      const expEl = document.getElementById('kmap-explanation');
-      titleEl.innerHTML = data.title;
-      expEl.innerHTML = data.exp;
-      renderMath(titleEl);
-      renderMath(expEl);
-
-      Object.keys(data.values).forEach(coord => {
-        const cell = document.getElementById(`kcell-${coord}`);
-        const val = data.values[coord];
-        cell.textContent = val;
-        if (data.ones.includes(coord)) {
-          cell.className = 'kmap-cell p-3 rounded-xl border-2 border-blue-500 bg-blue-500/20 text-blue-600 dark:text-blue-300 font-bold scale-105 shadow-sm';
-        } else {
-          cell.className = 'kmap-cell p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400';
-        }
-      });
-    }
-
-    // ==========================================
-    // 4. QUIZ DE REVISÃO
-    // ==========================================
-    function checkQuiz(btn, isCorrect, qId) {
-      const feedback = document.getElementById(`${qId}-feedback`);
-      feedback.classList.remove('hidden');
-      if (isCorrect) {
-        btn.className = 'w-full text-left p-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-xs font-semibold transition-all';
-        feedback.innerHTML = '✓ Resposta correta! Excelente domínio do conceito de estados ($2^n$ combinações).';
-        feedback.className = 'text-xs font-mono pt-1 text-emerald-500 font-bold';
-      } else {
-        btn.className = 'w-full text-left p-3 rounded-xl border-2 border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-300 text-xs transition-all';
-        feedback.innerHTML = '✗ Tente novamente! Observe a relação entre estados ($Q^t$) e Flip-Flops.';
-        feedback.className = 'text-xs font-mono pt-1 text-rose-500';
-      }
-      renderMath(feedback);
-    }
-
-    // Registro do Service Worker do PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      });
-    }
-  </script>
-</body>
+    <!-- Scripts de Interatividade, Renderização Matemática e Lógica da FSM -->
+    <script src="./main.js"></script>
+  </body>
 </html>
