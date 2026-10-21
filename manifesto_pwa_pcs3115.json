@@ -1,0 +1,20 @@
+{
+  "name": "PCS3115 - Máquinas de Estados Finitos (Moore & Mealy)",
+  "short_name": "FSM PCS3115",
+  "description": "Guia de estudo interativo e simulador de Máquinas de Estados Finitos (Moore e Mealy) e Mapas de Karnaugh para PCS3115.",
+  "lang": "pt-BR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090d16",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
